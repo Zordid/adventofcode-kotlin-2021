@@ -6,10 +6,10 @@ class Day01 : Day(1, 2021, "Sonar Sweep") {
         depthMeasurements.countIncreases()
 
     override fun part2(): Int =
-        depthMeasurements.windowed(3, 1).map { it.sum() }.countIncreases()
+        depthMeasurements.windowed(3, 1) { it.sum() }.countIncreases()
 
     private fun List<Long>.countIncreases() =
-        windowed(2, 1).count { (a, b) -> b > a }
+        asSequence().zipWithNext().count { (a, b) -> b > a }
 
 }
 
