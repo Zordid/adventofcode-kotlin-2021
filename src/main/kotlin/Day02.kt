@@ -1,6 +1,6 @@
 import Day02.Command.*
 
-class Day02 : Day(2, 2021) {
+class Day02 : Day(2, 2021, "Dive!") {
 
     enum class Command { FORWARD, UP, DOWN }
 

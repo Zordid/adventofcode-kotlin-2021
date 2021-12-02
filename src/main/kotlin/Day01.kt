@@ -14,5 +14,16 @@ class Day01 : Day(1, 2021, "Sonar Sweep") {
 }
 
 fun main() {
-    solve<Day01>()
+    solve<Day01>("""
+        199
+        200
+        208
+        210
+        200
+        207
+        240
+        269
+        260
+        263
+    """.trimIndent(), 7, 5)
 }
