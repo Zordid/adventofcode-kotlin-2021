@@ -21,4 +21,5 @@ dependencies {
     //implementation 'guru.nidi:graphviz-kotlin:0.18.1'
     implementation 'io.kotest:kotest-assertions-core-jvm:4.6.3'
     testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine:5.8.1'
+    implementation "org.jetbrains.kotlin:kotlin-reflect:1.6.0"
 }

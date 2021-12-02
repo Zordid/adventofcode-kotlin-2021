@@ -42,6 +42,27 @@ var globalTestData: String? = null
         field = null
     }
 
+inline fun <reified T : Day> create(): T =
+    T::class.constructors.first { it.parameters.isEmpty() }.call()
+
+inline fun <reified T : Day> solve(testData: String? = null, expectedPart1: Any? = null, expectedPart2: Any? = null) {
+    if (testData != null && (expectedPart1 != null || expectedPart2 != null)) {
+        globalTestData = testData
+        with(create<T>()) {
+            if (expectedPart1 != null)
+                part1().let { result ->
+                    check(result == expectedPart1) { "Part 1 result failed!\nExpected: $expectedPart1\nActual: $result" }
+                }
+            if (expectedPart2 != null)
+                part2().let { result ->
+                    check(result == expectedPart2) { "Part 2 result failed!\nExpected: $expectedPart2\nActual: $result" }
+                }
+        }
+    }
+    create<T>().solve()
+}
+
+
 /**
  * Global flag to indicate verbosity or silence
  */
@@ -84,7 +105,7 @@ abstract class Day(val day: Int, private val year: Int = 2021, val title: String
     fun <T> parsedInput(
         columnSeparator: Regex = Regex("\\s+"),
         predicate: (String) -> Boolean = { true },
-        lbd: ParserContext.(String) -> T
+        lbd: ParserContext.(String) -> T,
     ): List<T> =
         rawInput.filter(predicate).map(parsingMapper(columnSeparator, lbd)).show("Parsed")
 
@@ -137,19 +158,22 @@ abstract class Day(val day: Int, private val year: Int = 2021, val title: String
     companion object {
         private fun <T> matchingMapper(regex: Regex, lbd: (List<String>) -> T): (String) -> T = { s ->
             regex.matchEntire(s)?.groupValues?.let {
-                runCatching { lbd(it) }.getOrElse { error("Exception when matching \"$s\" - $it") }
+                runCatching { lbd(it) }.getOrElse { ex(s, it) }
             } ?: error("Input line does not match regex: \"$s\"")
         }
 
         private fun <T> catchingMapper(lbd: (String) -> T): (String) -> T = { s ->
-            runCatching { lbd(s) }.getOrElse { error("Exception when mapping \"$s\" - $it") }
+            runCatching { lbd(s) }.getOrElse { ex(s, it) }
         }
 
         private fun <T> parsingMapper(columnSeparator: Regex, lbd: ParserContext.(String) -> T): (String) -> T = { s ->
             runCatching {
                 ParserContext(columnSeparator, s).lbd(s)
-            }.getOrElse { error("Exception when parsing \"$s\" - $it") }
+            }.getOrElse { ex(s, it) }
         }
+
+        private fun ex(input: String, ex: Throwable): Nothing =
+            error("Exception on input line\n\n\"$input\"\n\n$ex")
 
         private fun <T> List<T>.preview(maxLines: Int, f: (idx: Int, data: T) -> Unit) {
             if (size <= maxLines) {

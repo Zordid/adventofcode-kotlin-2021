@@ -6,7 +6,7 @@ class Day01 : Day(1, 2021, "Sonar Sweep") {
         depthMeasurements.countIncreases()
 
     override fun part2(): Int =
-        depthMeasurements.windowed(3, 1) { it.sum() }.countIncreases()
+        depthMeasurements.windowed(3) { it.sum() }.countIncreases()
 
     private fun List<Long>.countIncreases() =
         asSequence().zipWithNext().count { (a, b) -> b > a }
@@ -14,5 +14,5 @@ class Day01 : Day(1, 2021, "Sonar Sweep") {
 }
 
 fun main() {
-    Day01().solve()
+    solve<Day01>()
 }
