@@ -1,60 +1,43 @@
-class Day03 : Day(3, 2021) {
+class Day03 : Day(3, 2021, "Binary Diagnostic") {
 
-    val x = input
+    private val diag = input
+    private val width = diag.first().indices
 
-    override fun part1(): Any? {
-        val l = x.size
-        val b = x.first().length
-        var r = ""
-        for (i in 0 until b) {
-            val zeros = x.map { it[i] }.count { it == '0' }
-            val ones = x.map { it[i] }.count { it == '1' }
-            if (zeros > ones) r += '0' else r += '1'
-        }
+    private fun List<String>.countBitsAt(pos: Int): Pair<Int, Int> =
+        with(map { it[pos] }) { count { it == '0' } to count { it == '1' } }
 
-        val gamma = r.toInt(2)
-        println(gamma)
-        r = ""
-        for (i in 0 until b) {
-            val zeros = x.map { it[i] }.count { it == '0' }
-            val ones = x.map { it[i] }.count { it == '1' }
-            if (zeros < ones) r += '0' else r += '1'
-        }
-        val epsilon = r.toInt(2)
-        println(epsilon)
+    override fun part1(): Int {
+        val gamma = width.joinToString("") { pos ->
+            val (zeros, ones) = diag.countBitsAt(pos)
+            if (zeros > ones) "0" else "1"
+        }.toInt(2)
+
+        val epsilon = width.joinToString("") { pos ->
+            val (zeros, ones) = diag.countBitsAt(pos)
+            if (zeros < ones) "0" else "1"
+        }.toInt(2)
+
         return gamma * epsilon
     }
 
-    override fun part2(): Any? {
-        var oxy = x
-        val b = x.first().length
-
-        for (i in 0 until b) {
-            val zeros = oxy.map { it[i] }.count { it == '0' }
-            val ones = oxy.map { it[i] }.count { it == '1' }
-            if (ones >= zeros) {
-                oxy = oxy.filter { it[i] == '1' }
+    override fun part2(): Int {
+        val oxygenRating = width.fold(diag) { remaining, pos ->
+            if (remaining.size > 1) {
+                val (zeros, ones) = remaining.countBitsAt(pos)
+                remaining.filter { it[pos] == (if (ones >= zeros) '1' else '0') }
             } else
-                oxy = oxy.filter { it[i] == '0' }
-            if (oxy.size == 1) break
-        }
-        val o = oxy.single().toInt(2)
-        println(o)
+                remaining
+        }.single().toInt(2)
 
-        var co2 = x
-        for (i in 0 until b) {
-            val zeros = co2.map { it[i] }.count { it == '0' }
-            val ones = co2.map { it[i] }.count { it == '1' }
-            if (ones < zeros) {
-                co2 = co2.filter { it[i] == '1' }
+        val co2Rating = width.fold(diag) { remaining, pos ->
+            if (remaining.size > 1) {
+                val (zeros, ones) = remaining.countBitsAt(pos)
+                remaining.filter { it[pos] == (if (ones < zeros) '1' else '0') }
             } else
-                co2 = co2.filter { it[i] == '0' }
-            if (co2.size == 1) break
-        }
-        val c = co2.single().toInt(2)
-        println(c)
+                remaining
+        }.single().toInt(2)
 
-        return c * o
+        return oxygenRating * co2Rating
     }
 }
 

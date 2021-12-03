@@ -51,11 +51,15 @@ inline fun <reified T : Day> solve(testData: String? = null, expectedPart1: Any?
         with(create<T>()) {
             if (expectedPart1 != null)
                 part1().let { result ->
-                    check(result == expectedPart1) { "Part 1 result failed!\nExpected: $expectedPart1\nActual: $result" }
+                    check(result.toString() == expectedPart1.toString()) {
+                        "Part 1 result failed!\nExpected: $expectedPart1\nActual: $result"
+                    }
                 }
             if (expectedPart2 != null)
                 part2().let { result ->
-                    check(result == expectedPart2) { "Part 2 result failed!\nExpected: $expectedPart2\nActual: $result" }
+                    check(result.toString() == expectedPart2.toString()) {
+                        "Part 2 result failed!\nExpected: $expectedPart2\nActual: $result"
+                    }
                 }
         }
     }
