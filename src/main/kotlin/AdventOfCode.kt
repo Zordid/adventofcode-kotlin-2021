@@ -75,6 +75,11 @@ var verbose = true
 @Suppress("unused")
 abstract class Day(val day: Int, private val year: Int = 2021, val title: String = "unknown") {
 
+    init {
+        require(day in 1..25) { "Wrong day $day" }
+        require(year in 2015..2021) { "Wrong year $year" }
+    }
+
     private val header: Unit by lazy { if (verbose) println("--- AoC $year, Day $day: $title ---\n") }
 
     private val rawInput: List<String> by lazy { globalTestData?.split("\n") ?: AoC.getPuzzleInput(day, year) }
