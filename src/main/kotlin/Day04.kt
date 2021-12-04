@@ -1,68 +1,46 @@
-class Day04 : Day(4, 2021) {
+class Day04 : Day(4, 2021, "Giant Squid") {
 
-    val p = input.joinToString("\n").split("\n\n")
-    val drawn = p.first().split(",").map { it.toInt() }
-    val boards = p.drop(1).map {
-        it.split("\n").map { board ->
-            board.trim().split("""\s+""".toRegex()).map { it.toInt() }
-        }
+    private val sections = inputAsString.split("\n\n")
+    private val drawn = sections.first().split(",").map { it.toInt() }
+    private val boards = sections.drop(1).map { board ->
+        board.split("\n").map { it.extractAllIntegers() }
     }
 
-    fun List<List<Int>>.hasRow(check: List<Int>) =
-        any { row ->
-            row.all { it in check }.also { if (it) println("Bingo in row $row") }
+    private fun Board.hasBingo(check: List<Int>) =
+        indices.any { idx ->
+            this[idx].all { it in check } || indices.all { this[it][idx] in check }
         }
 
-    fun List<List<Int>>.hasCol(check: List<Int>) =
-        indices.any { col ->
-            indices.all { row -> this[row][col] in check }.also { if (it) println("Bingo in col $col") }
+    private fun Board.score(check: List<Int>) =
+        flatten().filter { it !in check }.sum() * check.last()
+
+    override fun part1(): Int {
+        val round = drawn.indices.first { n ->
+            boards.any { it.hasBingo(drawn.take(n)) }
         }
+        val winningNumbers = drawn.take(round)
+        val winningBoard = boards.single { it.hasBingo(winningNumbers) }
 
-    fun List<List<Int>>.hasDiagonal1(check: List<Int>) =
-        indices.all { idx ->
-            this[idx][idx] in check
-        }.also { if (it) println("Bingo in diagonal 1") }
-
-    fun List<List<Int>>.hasDiagonal2(check: List<Int>) =
-        indices.all { idx ->
-            this[lastIndex - idx][idx] in check
-        }.also { if (it) println("Bingo in diagonal 2") }
-
-    fun List<List<Int>>.hasBingo(check: List<Int>) =
-        hasRow(check) || hasCol(check) //|| hasDiagonal1(check) || hasDiagonal2(check)
-
-    override fun part1(): Any? {
-        val win = drawn.indices.first { n ->
-            println("Checking ${drawn.take(n)}")
-            boards.any { it.hasBingo(drawn.take(n)) }.also { println("Winner: $it") }
-        }
-        println(win)
-        val winningNumbers = drawn.take(win)
-        println(winningNumbers)
-        val b = boards.single { it.hasBingo(winningNumbers) }
-        b.forEach { println(it) }
-        val sum = b.flatten().filter { it !in winningNumbers }.sum()
-        return sum * winningNumbers.last()
+        return winningBoard.score(winningNumbers)
     }
 
-    override fun part2(): Any? {
+    override fun part2(): Int {
         var remainingBoards = boards
         var drawnSoFar = emptyList<Int>()
         var lastBoards = emptyList<List<List<Int>>>()
-        for(n in drawn.indices) {
+        for (n in drawn.indices) {
             drawnSoFar = drawn.take(n)
             lastBoards = remainingBoards
             remainingBoards = remainingBoards.filter { !it.hasBingo(drawnSoFar) }
             if (remainingBoards.isEmpty())
                 break
         }
-        val b = lastBoards.single()
-        b.forEach { println(it) }
-        val sum = b.flatten().filter { it !in drawnSoFar }.sum()
-        return sum * drawnSoFar.last()
+        return lastBoards.single().score(drawnSoFar)
     }
 
 }
+
+typealias Board = List<List<Int>>
 
 fun main() {
     solve<Day04>("""
@@ -85,7 +63,5 @@ fun main() {
 18  8 23 26 20
 22 11 13  6  5
  2  0 12  3  7
-    """.trimIndent(),
-        4512,
-        1924)
+    """.trimIndent(), 4512, 1924)
 }
