@@ -1,22 +1,21 @@
 import utils.Direction8
 import utils.Point
-import utils.minus
 import utils.plus
 
 class Day05 : Day(5, 2021, "Hydrothermal Venture") {
 
-    data class Line(val p1: Point, val p2: Point) {
-        private val orientation = Direction8.ofVector(p2 - p1)
+    data class Line(val p1: Point, val p2: Point) : List<Point> by listOf(p1, p2) {
+        private val orientation = Direction8.ofVector(p1, p2)
         val isHorizontalOrVertical =
             orientation in listOf(Direction8.NORTH, Direction8.SOUTH, Direction8.EAST, Direction8.WEST)
-        val allPoints: List<Point> = sequence {
+        val allPoints: List<Point> = buildList {
             var x = p1
-            while (x != p2) yield(x).also { x += orientation!! }
-            yield(x)
-        }.toList()
+            while (x != p2) add(x).also { x += orientation!! }
+            add(x)
+        }
     }
 
-    private val lines: List<Line> =
+    val lines: List<Line> =
         mappedInput { it.extractAllIntegers().let { (x1, y1, x2, y2) -> Line((x1 to y1), (x2 to y2)) } }
 
     override fun part1(): Int {

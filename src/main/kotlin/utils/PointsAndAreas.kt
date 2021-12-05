@@ -172,6 +172,8 @@ enum class Direction4 : Direction {
         val DOWN = SOUTH
         val LEFT = WEST
 
+        fun ofVector(p1: Point, p2: Point): Direction4? = ofVector(p2 - p1)
+
         fun ofVector(v: Point): Direction4? =
             with(v) {
                 when (x.sign to y.sign) {
@@ -221,6 +223,8 @@ enum class Direction8 : Direction {
         val RIGHT = EAST
         val DOWN = SOUTH
         val LEFT = WEST
+
+        fun ofVector(p1: Point, p2: Point): Direction8? = ofVector(p2 - p1)
 
         fun ofVector(v: Point): Direction8? =
             with(v) {
