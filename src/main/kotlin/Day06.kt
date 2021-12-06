@@ -1,37 +1,31 @@
 import java.math.BigInteger
 
-class Day06 : Day(6, 2021) {
+class Day06 : Day(6, 2021, "Lanternfish") {
 
-    val p = mappedInput { it.extractAllIntegers() }.first()
+    private val population = mappedInput { it.extractAllIntegers() }.first()
 
-    override fun part1(): Any? {
-        val lanterns = Array(9) { c ->
-            p.count { it == c }.toBigInteger()
-        }
-        repeat(80) {
-            println("$it: ${lanterns.joinToString()}")
-            val zeros = lanterns.first()
-            (0 until lanterns.lastIndex).forEach { lanterns[it] = lanterns[it + 1] }
-            lanterns[6] = lanterns[6] + zeros
-            lanterns[lanterns.lastIndex] = zeros
-        }
-        return lanterns.reduce(BigInteger::plus)
+    private fun getInitialAges(): Array<BigInteger> = Array(9) { age ->
+        population.count { it == age }.toBigInteger()
     }
 
-    override fun part2(): Any? {
-        val lanterns = Array(9) { c ->
-            p.count { it == c }.toBigInteger()
+    private fun Array<BigInteger>.simulateCycles(n: Int): Array<BigInteger> {
+        var ages = this
+        repeat(n) {
+            ages = ages.shiftLeft()
+            ages[6] = ages[6] + ages[lastIndex]
         }
-        repeat(256) {
-            println("$it: ${lanterns.joinToString()}")
-            val zeros = lanterns.first()
-            (0 until lanterns.lastIndex).forEach { lanterns[it] = lanterns[it + 1] }
-            lanterns[6] = lanterns[6] + zeros
-            lanterns[lanterns.lastIndex] = zeros
-        }
-        return lanterns.reduce(BigInteger::plus)
+        return ages
     }
 
+    override fun part1(): BigInteger = getInitialAges().simulateCycles(80).sum()
+
+    override fun part2(): BigInteger = getInitialAges().simulateCycles(256).sum()
+
+    companion object {
+        private fun Array<BigInteger>.sum() = reduce(BigInteger::plus)
+
+        private inline fun <reified T> Array<T>.shiftLeft() = Array(size) { this[(it + 1) % size] }
+    }
 }
 
 fun main() {
