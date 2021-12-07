@@ -16,9 +16,9 @@ class Day07 : Day(7, 2021, "The Treachery of Whales") {
             (dist * (dist + 1)) / 2
         }
 
-    override fun part1() = positionsRange.map { calcFuelCosts(it) }.minOf { it }
+    override fun part1() = positionsRange.minOf { calcFuelCosts(it) }
 
-    override fun part2() = positionsRange.map { calcFuelCostsPart2(it) }.minOf { it }
+    override fun part2() = positionsRange.minOf { calcFuelCostsPart2(it) }
 
 }
 
