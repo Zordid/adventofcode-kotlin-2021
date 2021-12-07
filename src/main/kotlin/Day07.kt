@@ -1,10 +1,11 @@
 import utils.minMaxOrNull
+import utils.rangeOrNull
 import kotlin.math.absoluteValue
 
 class Day07 : Day(7, 2021, "The Treachery of Whales") {
 
     private val crabPositions = mappedInput { it.extractAllIntegers() }.first()
-    private val positionsRange = crabPositions.minMaxOrNull()!!.let { it.first..it.second }
+    private val positionsRange = crabPositions.rangeOrNull()!!
 
     private fun calcFuelCosts(destPosition: Int): Int =
         crabPositions.sumOf { (destPosition - it).absoluteValue }
