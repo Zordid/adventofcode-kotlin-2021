@@ -121,11 +121,11 @@ abstract class Day(val day: Int, private val year: Int = 2021, val title: String
     fun <T> matchedInput(regex: Regex, lbd: (List<String>) -> T): List<T> =
         rawInput.map(matchingMapper(regex, lbd)).show("Matched")
 
-    val part1: Any? by lazy { part1() }
-    val part2: Any? by lazy { part2() }
+    val part1: Any by lazy { part1() }
+    val part2: Any by lazy { part2() }
 
-    open fun part1(): Any? = "not yet implemented"
-    open fun part2(): Any? = "not yet implemented"
+    open fun part1(): Any = "not yet implemented"
+    open fun part2(): Any = "not yet implemented"
 
     fun solve() {
         header
