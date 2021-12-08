@@ -1,3 +1,5 @@
+import utils.permutations
+
 class Day08 : Day(8, 2021, "Seven Segment Search") {
 
     private val entries = mappedInput {
@@ -9,7 +11,9 @@ class Day08 : Day(8, 2021, "Seven Segment Search") {
         ov.count { it.length !in listOf(5, 6) }
     }
 
-    override fun part2() = entries.sumOf { (sp, ov) ->
+    override fun part2() = part2UsingPermutations()
+
+    private fun part2UsingDeduction() = entries.sumOf { (sp, ov) ->
         val all = (sp + ov).distinct()
 
         val known = Array<String?>(10) { null }
@@ -37,12 +41,38 @@ class Day08 : Day(8, 2021, "Seven Segment Search") {
         ov.joinToString("") { known.indexOf(it).toString() }.toInt()
     }
 
+    private fun part2UsingPermutations() = entries.sumOf { (sp, ov) ->
+        val all = (sp + ov).distinct()
+        val perm = "abcdefg".permutations()
+        val solution = perm.first { w ->
+            all.all { it.translated(w).toDigit() != null }
+        }
+        ov.joinToString("") { it.translated(solution).toDigit()!! }.toInt()
+    }
+
     companion object {
-        fun String.sorted(): String =
+        private fun String.sorted(): String =
             toList().sorted().joinToString("")
 
-        infix fun String?.allIn(other: String?) =
+        private infix fun String?.allIn(other: String?) =
             if (this != null && other != null) all { it in other } else error("info is missing")
+
+        private fun String.translated(wiring: String): String =
+            this.map { incoming -> wiring[incoming - 'a'] }.joinToString("")
+
+        private fun String.toDigit(): String? = when (this.sorted()) {
+            "abcefg" -> 0
+            "cf" -> 1
+            "acdeg" -> 2
+            "acdfg" -> 3
+            "bcdf" -> 4
+            "abdfg" -> 5
+            "abdefg" -> 6
+            "acf" -> 7
+            "abcdefg" -> 8
+            "abcdfg" -> 9
+            else -> null
+        }?.toString()
     }
 
 }
