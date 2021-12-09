@@ -33,10 +33,16 @@ internal class CombinatoricsTest {
     @Test
     fun `test permutations of elements`() {
         "".permutations().toList().shouldBeEmpty()
+
         "a".permutations().toList() shouldContainExactlyInAnyOrder
                 listOf("a")
+
         "ab".permutations().toList() shouldContainExactlyInAnyOrder
                 listOf("ab", "ba")
+
+        "aa".permutations().toList() shouldContainExactlyInAnyOrder
+                listOf("aa", "aa")
+
         "abc".permutations().toList() shouldContainExactlyInAnyOrder
                 listOf(
                     "abc",
