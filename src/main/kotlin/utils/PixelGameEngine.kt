@@ -8,6 +8,7 @@ import javax.swing.JFrame
 import javax.swing.JPanel
 import javax.swing.WindowConstants
 import kotlin.math.absoluteValue
+import kotlin.math.roundToInt
 import kotlin.system.measureTimeMillis
 
 /**
@@ -333,7 +334,9 @@ abstract class PixelGameEngine {
     /**
      * Will be called from the game engine right before the endless game loop. Can be used to initialize things.
      */
-    open fun onCreate() {}
+    open fun onCreate() {
+        // nop
+    }
 
     /**
      * Will be called once per game loop to update the screen. Use the supplied methods to interact with the screen.
@@ -349,7 +352,9 @@ abstract class PixelGameEngine {
         sleep(1000)
     }
 
-    open fun onStop(elapsedTime: Long, frame: Long) {}
+    open fun onStop(elapsedTime: Long, frame: Long) {
+        // nop
+    }
 
     private fun updateTitle(fps: Double) {
         frame.title = "$appName - $appInfo - ${"%.1f".format(fps)} fps"
@@ -357,6 +362,18 @@ abstract class PixelGameEngine {
 
     private fun updateTitle(state: String) {
         frame.title = "$appName - $appInfo - $state"
+    }
+
+    companion object {
+        fun gradientColor(from: Color, to: Color, percent: Float): Color {
+            val resultRed: Float = from.red + percent * (to.red - from.red)
+            val resultGreen: Float = from.green + percent * (to.green - from.green)
+            val resultBlue: Float = from.blue + percent * (to.blue - from.blue)
+            return Color(resultRed.roundToInt(), resultGreen.roundToInt(), resultBlue.roundToInt())
+        }
+
+        fun createGradient(from: Color, to: Color, steps: Int): List<Color> =
+            (0 until steps).map { gradientColor(from, to, it / (steps - 1).toFloat()) }
     }
 
 }

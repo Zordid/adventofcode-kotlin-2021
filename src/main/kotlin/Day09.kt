@@ -1,9 +1,9 @@
 import utils.*
 
-class Day09 : Day(9, 2021) {
+class Day09 : Day(9, 2021, "Smoke Basin") {
 
-    private val heights = mappedInput { it.toList().map { it.digitToInt() } }
-    private val bounds = heights.area()
+    val heights = mappedInput { it.toList().map { it.digitToInt() } }
+    val bounds = heights.area()
 
     override fun part1() = bounds.allPoints().sumOf { p ->
         if (isLow(p)) heights[p]!! + 1 else 0
@@ -15,12 +15,12 @@ class Day09 : Day(9, 2021) {
             .sortedDescending().take(3)
             .reduce(Int::times)
 
-    private fun isLow(p: Point) =
+    fun isLow(p: Point) =
         p.directNeighbors().filter { it in bounds }.all { n ->
             heights[n]!! > heights[p]!!
         }
 
-    private fun floodFill(p: Point, basin: MutableSet<Point> = mutableSetOf()): Set<Point> {
+    fun floodFill(p: Point, basin: MutableSet<Point> = mutableSetOf()): Set<Point> {
         if (p !in bounds || heights[p] == 9 || p in basin) return basin
         basin += p
         floodFill(p + Direction4.UP, basin)
