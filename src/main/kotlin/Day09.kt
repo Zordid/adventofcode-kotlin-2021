@@ -6,33 +6,24 @@ class Day09 : Day(9, 2021, "Smoke Basin") {
     val bounds = heights.area()
 
     override fun part1() = bounds.allPoints().sumOf { p ->
-        if (isLow(p)) heights[p]!! + 1 else 0
+        if (p.isLow()) heights[p]!! + 1 else 0
     }
 
     override fun part2() =
-        bounds.allPoints().filter { isLow(it) }
+        bounds.allPoints().filter { it.isLow() }
             .map { floodFill(it).size }
             .sortedDescending().take(3)
             .reduce(Int::times)
 
-    fun isLow(p: Point) =
-        p.directNeighbors().filter { it in bounds }.all { n ->
-            heights[n]!! > heights[p]!!
+    fun Point.isLow() =
+        directNeighbors().filter { it in bounds }.all { n ->
+            heights[n]!! > heights[this]!!
         }
 
     fun floodFill(p: Point, basin: MutableSet<Point> = mutableSetOf()): Set<Point> {
-        if (p !in bounds || heights[p] == 9 || p in basin) return basin
-        basin += p
-        floodFill(p + Direction4.UP, basin)
-        floodFill(p + Direction4.DOWN, basin)
-        listOf(Direction4.LEFT, Direction4.RIGHT).forEach { d ->
-            var l = p + d
-            while (l in bounds && heights[l] != 9) {
-                basin += l
-                floodFill(l + Direction4.UP, basin)
-                floodFill(l + Direction4.DOWN, basin)
-                l += d
-            }
+        if (p in bounds && heights[p] != 9 && p !in basin) {
+            basin += p
+            p.directNeighbors().forEach { floodFill(it, basin) }
         }
         return basin
     }

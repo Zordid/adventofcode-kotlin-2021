@@ -194,6 +194,10 @@ enum class Direction4 : Direction {
         }
 
         val allVectors: List<Point> = values().map { it.vector }
+
+        inline fun forEach(action: (Direction) -> Unit) {
+            values().forEach(action)
+        }
     }
 }
 
@@ -242,5 +246,9 @@ enum class Direction8 : Direction {
             }
 
         val allVectors: List<Point> = values().map { it.vector }
+
+        inline fun forEach(action: (Direction) -> Unit) {
+            Direction4.values().forEach(action)
+        }
     }
 }

@@ -6,7 +6,7 @@ class Day09Graphical : PixelGameEngine() {
     val day09 = Day09()
     val bounds = day09.bounds
     private val heights = day09.heights
-    private val lows = bounds.allPoints().filter { day09.isLow(it) }
+    private val lows = bounds.allPoints().filter { with(day09) { it.isLow() } }
     private val basins = lows.associateWith { l ->
         day09.floodFill(l, LinkedHashSet()).iterator()
     }
