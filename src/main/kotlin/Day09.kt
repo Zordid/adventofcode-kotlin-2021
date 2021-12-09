@@ -6,7 +6,7 @@ class Day09 : Day(9, 2021, "Smoke Basin") {
     val bounds = heights.area()
 
     override fun part1() = bounds.allPoints().sumOf { p ->
-        if (p.isLow()) heights[p]!! + 1 else 0
+        if (p.isLow()) p.riskLevel() else 0
     }
 
     override fun part2() =
@@ -14,6 +14,8 @@ class Day09 : Day(9, 2021, "Smoke Basin") {
             .map { floodFill(it).size }
             .sortedDescending().take(3)
             .reduce(Int::times)
+
+    fun Point.riskLevel() = heights[this]!! + 1
 
     fun Point.isLow() =
         directNeighbors().filter { it in bounds }.all { n ->

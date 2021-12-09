@@ -8,7 +8,10 @@ class Day09Graphical : PixelGameEngine() {
     private val heights = day09.heights
     private val lows = bounds.allPoints().filter { with(day09) { it.isLow() } }
     private val basins = lows.associateWith { l ->
-        day09.floodFill(l, LinkedHashSet()).iterator()
+        day09.floodFill(l, LinkedHashSet())
+    }
+    private val basinIterators = basins.mapValues { (_,v)->
+        v.iterator()
     }
     private val colors = createGradient(Color.BLUE, Color.RED, 10)
 
@@ -29,14 +32,19 @@ class Day09Graphical : PixelGameEngine() {
             }
             sleep(250)
         } else if (frame > 20L) {
-            basins.forEach { (_, i) ->
+            basinIterators.forEach { (_, i) ->
                 if (i.hasNext()) {
                     val next = i.next()
-                    draw(next.x, next.y, Color.WHITE)
+                    draw(next.x, next.y, colors.first())
                 }
             }
-            if (basins.none { (_, i) -> i.hasNext() })
+            if (basinIterators.none { (_, i) -> i.hasNext() }) {
+                val top3 = basins.values.sortedByDescending { it.size }.take(3)
+                top3.flatten().forEach {
+                    draw(it.x, it.y, Color.WHITE)
+                }
                 stop()
+            }
             else
                 sleep(50)
         }
