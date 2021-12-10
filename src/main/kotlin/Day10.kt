@@ -1,35 +1,36 @@
 class Day10 : Day(10, 2021, "Syntax Scoring") {
 
-    override fun part1() = input.sumOf {
-        val (illegal) = it.firstIllegalOrStack()
-        illegalScore[illegal] ?: 0
-    }
+    override fun part1() = input.map { it.checkSyntax() }
+        .filterIsInstance<Check.Corrupted>()
+        .sumOf { (found, _) -> illegalScore[found]!! }
 
-    override fun part2() = input
-        .mapNotNull { line->
-            line.firstIllegalOrStack().second
-        }.map { stack ->
-            stack.reversed().fold(0L) { score, c -> score * 5 + completionScore[c]!! }
+    override fun part2() = input.map { it.checkSyntax() }
+        .filterIsInstance<Check.Incomplete>()
+        .map { (expected) ->
+            expected.reversed().fold(0L) { score, c -> score * 5 + completionScore[c]!! }
         }.sorted().let {
             it[(it.size - 1) / 2]
         }
 
-    private fun String.firstIllegalOrStack(): Pair<Char?, List<Char>?> {
-        val stack = mutableListOf<Char>()
-        for (c in this) {
-            when {
-                c.isOpening() -> stack += c
-                c == closing[stack.lastOrNull()] -> stack.removeLast()
-                else -> return c to null
-            }
-        }
-        return null to stack
+    sealed class Check {
+        data class Corrupted(val found: Char, val expected: Char?) : Check()
+        data class Incomplete(val expected: List<Char>) : Check()
     }
 
     companion object {
-        fun Char.isOpening() = this in closing
+        private fun String.checkSyntax(): Check {
+            val stack = mutableListOf<Char>()
+            for (c in this) {
+                when (c) {
+                    in closing -> stack += closing[c]!!
+                    stack.lastOrNull() -> stack.removeLast()
+                    else -> return Check.Corrupted(c, stack.lastOrNull())
+                }
+            }
+            return Check.Incomplete(stack)
+        }
 
-        val closing = mapOf(
+        private val closing = mapOf(
             '(' to ')',
             '[' to ']',
             '{' to '}',
@@ -44,10 +45,10 @@ class Day10 : Day(10, 2021, "Syntax Scoring") {
         )
 
         val completionScore = mapOf(
-            '(' to 1,
-            '[' to 2,
-            '{' to 3,
-            '<' to 4
+            ')' to 1,
+            ']' to 2,
+            '}' to 3,
+            '>' to 4
         )
     }
 
