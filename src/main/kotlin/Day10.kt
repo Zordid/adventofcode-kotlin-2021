@@ -15,15 +15,15 @@ class Day10 : Day(10, 2021, "Syntax Scoring") {
         }
 
     private fun String.firstIllegalOrStack(): Pair<Char?, List<Char>?> {
-        val opened = mutableListOf<Char>()
-        for (i in this) {
+        val stack = mutableListOf<Char>()
+        for (c in this) {
             when {
-                i.isOpening() -> opened += i
-                i == closing[opened.lastOrNull()] -> opened.removeLast()
-                else -> return i to null
+                c.isOpening() -> stack += c
+                c == closing[stack.lastOrNull()] -> stack.removeLast()
+                else -> return c to null
             }
         }
-        return null to opened
+        return null to stack
     }
 
     companion object {
