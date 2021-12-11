@@ -1,46 +1,58 @@
+import kotlin.system.exitProcess
+
 class Day04 : Day(4, 2021, "Giant Squid") {
 
     private val sections = inputAsString.split("\n\n")
     private val drawn = sections.first().split(",").map { it.toInt() }
     private val boards = sections.drop(1).map { board ->
-        board.split("\n").map { it.extractAllIntegers() }
+        Matrix(board.split("\n").map { it.extractAllIntegers() })
     }
 
-    private fun Board.hasBingo(check: List<Int>) =
-        indices.any { idx ->
-            this[idx].all { it in check } || indices.all { this[it][idx] in check }
-        }
+    private val drawnInRound = (0..drawn.size).associateWith { round ->
+        drawn.take(round).toSet()
+    }
 
-    private fun Board.score(check: List<Int>) =
-        flatten().filter { it !in check }.sum() * check.last()
+    private fun Board.hasBingo(drawnNumbers: Collection<Int>): Boolean =
+        (rows + columns).any { (it - drawnNumbers).isEmpty() }
+
+    private fun Board.score(check: Collection<Int>, lastDrawn: Int) =
+        flatten().filter { it !in check }.sum() * lastDrawn
+
+    fun Board.numbersNeededForBingo(numbers: List<Int>) = numbers.indices.firstOrNull {
+        hasBingo(numbers.take(it))
+    }
+
 
     override fun part1(): Int {
         val round = drawn.indices.first { n ->
-            boards.any { it.hasBingo(drawn.take(n)) }
+            boards.any { it.hasBingo(drawnInRound[n]!!) }
         }
-        val winningNumbers = drawn.take(round)
+        val winningNumbers = drawnInRound[round]!!
         val winningBoard = boards.single { it.hasBingo(winningNumbers) }
 
-        return winningBoard.score(winningNumbers)
+        return winningBoard.score(winningNumbers, drawn[round - 1])
     }
 
     override fun part2(): Int {
+//        return boards.map { it to (it.numbersNeededForBingo(drawn) ?: 0) }.maxByOrNull { it.second }!!.let { (b,n)->
+//            b.score(drawn.slice(0 until n))
+//        }
         var remainingBoards = boards
-        var drawnSoFar = emptyList<Int>()
-        var lastBoards = emptyList<List<List<Int>>>()
-        for (n in drawn.indices) {
-            drawnSoFar = drawn.take(n)
+        var drawnSoFar = emptySet<Int>()
+        var lastBoards = emptyList<Board>()
+        for (n in 0..drawn.size) {
+            drawnSoFar = drawnInRound[n]!!
             lastBoards = remainingBoards
             remainingBoards = remainingBoards.filter { !it.hasBingo(drawnSoFar) }
             if (remainingBoards.isEmpty())
                 break
         }
-        return lastBoards.single().score(drawnSoFar)
+        return lastBoards.single().score(drawnSoFar, drawn[drawnSoFar.size - 1])
     }
 
 }
 
-typealias Board = List<List<Int>>
+typealias Board = Matrix<Int>
 
 fun main() {
     solve<Day04>("""
@@ -64,4 +76,32 @@ fun main() {
 22 11 13  6  5
  2  0 12  3  7
     """.trimIndent(), 4512, 1924)
+}
+
+data class Matrix<T>(val rows: List<List<T>>) : List<List<T>> by rows {
+    init {
+        require(rows.all { it.size == rows.first().size })
+    }
+
+    val columns: List<List<T>> by lazy {
+        rows.first().indices.map { col -> rows.map { it[col] } }
+    }
+
+    fun transposed(): Matrix<T> = Matrix(columns)
+    fun flippedHorizontally(): Matrix<T> = Matrix(rows.reversed())
+    fun flippedVertically(): Matrix<T> = Matrix(rows.map { it.reversed() })
+
+    fun forEachIndexed(action: (rowIdx: Int, colIdx: Int, value: T) -> Unit) {
+        forEachIndexed { rowIdx, row ->
+            row.forEachIndexed { colIdx, v -> action(rowIdx, colIdx, v) }
+        }
+    }
+
+    fun <R> map(transform: (value: T) -> R): Matrix<R> = Matrix(rows.map { row -> row.map { transform(it) } })
+    fun <R> mapIndexed(transform: (rowIdx: Int, colIdx: Int, value: T) -> R): Matrix<R> =
+        Matrix(rows.mapIndexed { rowIdx, row -> row.mapIndexed { colIdx, v -> transform(rowIdx, colIdx, v) } })
+
+    override fun toString(): String {
+        return rows.joinToString(System.lineSeparator())
+    }
 }

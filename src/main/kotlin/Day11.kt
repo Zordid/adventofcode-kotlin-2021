@@ -1,53 +1,41 @@
 import utils.*
 
-class Day11 : Day(11, 2021) {
+class Day11 : Day(11, 2021, "Dumbo Octopus") {
 
-    val levels: Grid = mappedInput { it.toList().map { it.digitToInt() } }
-    val area = levels.area()
+    val levels: EnergyGrid = mappedInput { it.toList().map { it.digitToInt() } }
+    private val area = levels.area()
 
-    fun Grid.step(): Pair<Grid, Int> {
-        val l = this.map { it.map { it + 1 }.toMutableList() }
+    override fun part1() =
+        (1..100).fold(levels to 0) { (l, flashedAcc), _ ->
+            l.step().let { (l, f) -> l to f.size + flashedAcc }
+        }.second
 
+    override fun part2() =
+        (1..Int.MAX_VALUE).asSequence()
+            .runningFold(levels to emptySet<Point>()) { (l, _), _ -> l.step() }
+            .takeWhile { (_, flashed) -> flashed.size < area.size }
+            .count()
+
+    fun EnergyGrid.step(): Pair<EnergyGrid, Set<Point>> {
+        val nextLevels = mapValues { it + 1 }.toMutableGrid()
         val flashed = mutableSetOf<Point>()
 
         fun flash(p: Point) {
-            if (p in flashed) return
-            flashed += p
-            p.surroundingNeighbors().forEach { n ->
-                if (n in area && ++l[n.y][n.x] > 9) flash(n)
+            if (flashed.add(p)) {
+                p.surroundingNeighbors().forEach { n ->
+                    if (n in area && ++nextLevels[n] > 9) flash(n)
+                }
             }
         }
 
-        area.forEach { p ->
-            if (l[p]!! > 9) flash(p)
-        }
-        flashed.forEach { p ->
-            l[p.y][p.x] = 0
-        }
-        return l to flashed.size
-    }
-
-    override fun part1(): Any {
-        return (1..100).fold(levels to 0) { (l, acc), _ ->
-//            l.forEach { println(it.joinToString("")) }
-//            println("Total: $acc")
-//            println()
-            l.step().let { it.first to it.second + acc }
-        }.second
-    }
-
-    override fun part2(): Any {
-        return (1..Int.MAX_VALUE).asSequence()
-            .onEach { print(it) }
-            .runningFold(levels to 0) { (l, _), _ -> l.step() }
-            .onEach { println(": ${it.second}") }
-            .takeWhile { (_,f)-> f < area.size }
-            .count()
+        forArea { p -> if (nextLevels[p] > 9) flash(p) }
+        flashed.forEach { p -> nextLevels[p] = 0 }
+        return nextLevels to flashed
     }
 
 }
 
-typealias Grid = List<List<Int>>
+typealias EnergyGrid = Grid<Int>
 
 fun main() {
     solve<Day11>("""

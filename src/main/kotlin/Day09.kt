@@ -15,11 +15,11 @@ class Day09 : Day(9, 2021, "Smoke Basin") {
             .sortedDescending().take(3)
             .reduce(Int::times)
 
-    fun Point.riskLevel() = heights[this]!! + 1
+    fun Point.riskLevel() = heights[this] + 1
 
     fun Point.isLow() =
         directNeighbors().filter { it in bounds }.all { n ->
-            heights[n]!! > heights[this]!!
+            heights[n] > heights[this]
         }
 
     fun floodFill(p: Point, basin: MutableSet<Point> = mutableSetOf()): Set<Point> {

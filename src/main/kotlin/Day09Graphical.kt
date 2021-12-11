@@ -18,13 +18,13 @@ class Day09Graphical : PixelGameEngine() {
     override fun onUpdate(elapsedTime: Long, frame: Long) {
         if (frame == 0L) {
             bounds.forEach {
-                val c = colors[heights[it]!!]
+                val c = colors[heights[it]]
                 draw(it.x, it.y, c)
             }
             sleep(1000)
         } else if (frame in 1L..20L) {
             lows.forEach {
-                val c = colors[heights[it]!!]
+                val c = colors[heights[it]]
                 if (frame % 2 == 0L)
                     draw(it.x, it.y, Color.WHITE)
                 else

@@ -9,9 +9,9 @@ class Day05 : Day(5, 2021, "Hydrothermal Venture") {
         val isHorizontalOrVertical =
             orientation in listOf(Direction8.NORTH, Direction8.SOUTH, Direction8.EAST, Direction8.WEST)
         val allPoints: List<Point> = buildList {
-            var x = p1
-            while (x != p2) add(x).also { x += orientation!! }
-            add(x)
+            var p = p1
+            while (p != p2) add(p).also { p += orientation!! }
+            add(p)
         }
     }
 
@@ -20,11 +20,42 @@ class Day05 : Day(5, 2021, "Hydrothermal Venture") {
 
     override fun part1(): Int {
         val hv = lines.filter { it.isHorizontalOrVertical }
+//        val a = Array(1000) { IntArray(1000) { 0 } }
+//        var c = 0
+//        hv.forEach {
+//            it.allPoints.forEach { (x, y) ->
+//                val was = a[y][x]
+//                when (was) {
+//                    0 -> a[y][x] = 1
+//                    1 -> {
+//                        a[y][x] = 2
+//                        c++
+//                    }
+//                }
+//            }
+//        }
+//        return c
         return hv.flatMap { it.allPoints }.groupingBy { it }.eachCount().count { it.value > 1 }
     }
 
-    override fun part2(): Int =
-        lines.flatMap { it.allPoints }.groupingBy { it }.eachCount().count { it.value > 1 }
+    override fun part2(): Int {
+//        val a = Array(1000) { IntArray(1000) { 0 } }
+//        var c = 0
+//        lines.forEach {
+//            it.allPoints.forEach { (x, y) ->
+//                val was = a[y][x]
+//                when (was) {
+//                    0 -> a[y][x] = 1
+//                    1 -> {
+//                        a[y][x] = 2
+//                        c++
+//                    }
+//                }
+//            }
+//        }
+//        return c
+        return lines.flatMap { it.allPoints }.groupingBy { it }.eachCount().count { it.value > 1 }
+    }
 
 }
 

@@ -41,38 +41,60 @@ inline fun <T, R : Comparable<R>> Iterable<T>.minMaxByOrNull(selector: (T) -> R)
 fun Iterable<Int>.rangeOrNull(): IntRange? = minMaxOrNull()?.let { it.first..it.second }
 fun Iterable<Long>.rangeOrNull(): LongRange? = minMaxOrNull()?.let { it.first..it.second }
 
-fun List<List<*>>.area(): Area = origin to (first().size - 1 to size - 1)
+typealias Grid<T> = List<List<T>>
+typealias MutableGrid<T> = List<MutableList<T>>
 
-fun List<List<*>>.indices(): Sequence<Point> = sequence {
+fun <T> Grid<T>.toMutableGrid(): MutableGrid<T> = List(size) { this[it].toMutableList() }
+
+fun <T> Grid<T>.fix(default: T): Grid<T> {
+    val maxWidth = maxOf { it.size }
+    return map { row ->
+        row.takeIf { row.size == maxWidth } ?: List(maxWidth) { idx -> if (idx < row.size) row[idx] else default }
+    }
+}
+
+fun Grid<*>.area(): Area = origin to (first().size - 1 to size - 1)
+
+@JvmName("areaString")
+fun List<String>.area(): Area = origin to (first().length - 1 to size - 1)
+
+fun Grid<*>.indices(): Sequence<Point> = sequence {
     for (y in this@indices.indices) {
         for (x in this@indices[y].indices)
             yield(x to y)
     }
 }
 
-inline fun <T> List<List<T>>.forArea(f: (p: Point, v: T) -> Unit) {
+inline fun <T> Grid<T>.forArea(f: (p: Point, v: T) -> Unit) {
     for (y in this.indices)
         for (x in this[y].indices)
             f(x to y, this[y][x])
 }
 
-inline fun <T> List<List<T>>.forArea(f: (p: Point) -> Unit) {
+inline fun <T> Grid<T>.forArea(f: (p: Point) -> Unit) {
     for (y in this.indices)
         for (x in this[y].indices)
             f(x to y)
 }
 
-operator fun <T> List<List<T>>.get(p: Point): T? =
-    if (p.y in indices && p.x in this[p.y].indices) this[p.y][p.x] else null
+fun <T, R> Grid<T>.mapValues(transform: (T) -> R): Grid<R> =
+    map { it.map(transform) }
 
-operator fun <T> List<MutableList<T>>.set(p: Point, v: T) {
+operator fun <T> Grid<T>.get(p: Point): T =
+    if (p.y in indices && p.x in this[p.y].indices) this[p.y][p.x]
+    else error("Point $p not in grid of area ${area()}")
+
+operator fun <T> MutableGrid<T>.set(p: Point, v: T) {
     if (p.y in indices && p.x in this[p.y].indices) this[p.y][p.x] = v
+    else error("Point $p not in grid of area ${area()}")
 }
 
-operator fun List<String>.get(p: Point): Char? =
-    if (p.y in indices && p.x in this[p.y].indices) this[p.y][p.x] else null
+operator fun List<String>.get(p: Point): Char =
+    if (p.y in indices && p.x in this[p.y].indices) this[p.y][p.x]
+    else error("Point $p not in grid of area ${area()}")
 
-fun <T> List<List<T>>.matchingIndices(predicate: (T) -> Boolean): List<Point> =
+
+fun <T> Grid<T>.matchingIndices(predicate: (T) -> Boolean): List<Point> =
     flatMapIndexed { y, l -> l.mapIndexedNotNull { x, item -> if (predicate(item)) x to y else null } }
 
 
