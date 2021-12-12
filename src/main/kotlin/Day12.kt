@@ -12,46 +12,32 @@ class Day12 : Day(12, 2021, "Passage Pathing") {
             }
         }
 
-    override fun part1(): Any {
-
-        fun visit(
-            node: String,
-            visited: List<String> = emptyList(),
-            onEnd: (List<String>) -> Unit,
-        ) {
-            if (node == END) return onEnd(visited + node)
-            val isBoring = node.isSmallCave() && node in visited
-            if (!isBoring)
-                connections[node]?.forEach {
-                    visit(it, visited + node, onEnd)
-                }
-        }
-
+    override fun part1(): Int {
         var count = 0
-        visit(START) { count++ }
+        visitCave(START) { count++ }
         return count
     }
 
-    override fun part2(): Any {
-
-        fun visit(
-            node: String,
-            visited: List<String> = emptyList(),
-            hadTwice: Boolean = false,
-            onEnd: (List<String>) -> Unit,
-        ) {
-            if (node == END) return onEnd(visited + node)
-
-            val isBoring = node.isSmallCave() && node in visited
-            if (!isBoring || !hadTwice)
-                connections[node]?.forEach {
-                    visit(it, visited + node, hadTwice || isBoring, onEnd)
-                }
-        }
-
+    override fun part2(): Int {
         var count = 0
-        visit(START) { count++ }
+        visitCave(START, 1) { count++ }
         return count
+    }
+
+    private fun visitCave(
+        cave: String,
+        boredomTolerance: Int = 0,
+        visited: CavePath = emptyList(),
+        onEndFound: (CavePath) -> Unit,
+    ) {
+        if (cave == END) return onEndFound(visited + cave)
+
+        val howBoringIsThisCave = if (cave.isSmallCave() && cave in visited) 1 else 0
+        if (boredomTolerance - howBoringIsThisCave < 0) return
+
+        connections[cave]?.forEach {
+            visitCave(it, boredomTolerance - howBoringIsThisCave, visited + cave, onEndFound)
+        }
     }
 
     companion object {
@@ -61,6 +47,8 @@ class Day12 : Day(12, 2021, "Passage Pathing") {
         private fun String.isSmallCave() = first().isLowerCase()
     }
 }
+
+typealias CavePath = List<String>
 
 fun main() {
     solve<Day12>("""
