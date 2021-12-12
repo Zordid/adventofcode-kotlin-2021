@@ -1,76 +1,83 @@
-class Day12 : Day(12, 2021) {
+class Day12 : Day(12, 2021, "Passage Pathing") {
 
-    val con = mappedInput {
-        val (s, e) = it.split("-")
-        s to e
-    }.let {
-        buildMap {
-            it.forEach { (s, e) ->
-                getOrPut(s) { mutableSetOf<String>() } += e
-                getOrPut(e) { mutableSetOf<String>() } += s
+    private val connections: Map<String, Set<String>> = mappedInput { it.split("-") }
+        .let {
+            buildMap<String, MutableSet<String>> {
+                it.forEach { (s, e) ->
+                    if (s != "end" && e != "start")
+                        getOrPut(s) { mutableSetOf() } += e
+                    if (e != "end" && s != "start")
+                        getOrPut(e) { mutableSetOf() } += s
+                }
             }
         }
-    }
 
     override fun part1(): Any {
-        val paths = mutableListOf<List<String>>()
 
-        fun visit(node: String, visited: List<String>) {
-            if (node == "end") {
-                paths += (visited + node)
-                return
-            }
-            if ((node == "start" || node.all { it.isLowerCase() }) && node in visited) return
-
-            val dests = con[node]
-            dests?.forEach {
-                visit(it, visited + node)
-            }
+        fun visit(
+            node: String,
+            visited: List<String> = emptyList(),
+            onEnd: (List<String>) -> Unit,
+        ) {
+            if (node == "end") return onEnd(visited + node)
+            val isBoring = node.isSmallCave() && node in visited
+            if (!isBoring)
+                connections[node]?.forEach {
+                    visit(it, visited + node, onEnd)
+                }
         }
 
-        visit("start", emptyList())
-        return paths.count()
+        var count = 0
+        visit("start") { count++ }
+        return count
     }
 
     override fun part2(): Any {
-        val paths = mutableListOf<List<String>>()
 
-        fun visit(node: String, visited: List<String>, hadTwice: String? = null) {
-            if (node == "end") {
-                paths += (visited + node)
-                return
-            }
-            if (node == "start" && visited.isNotEmpty()) return
+        fun visit(
+            node: String,
+            visited: List<String> = emptyList(),
+            hadTwice: Boolean = false,
+            onEnd: (List<String>) -> Unit,
+        ) {
+            if (node == "end") return onEnd(visited + node)
 
-            var hT = hadTwice
-            val smallCave = node.all { it.isLowerCase() }
-            if (smallCave && node in visited) {
-                if (hadTwice != null)
-                    return
-                hT = node
-            }
-
-            val dests = con[node]
-            val newPath = visited + node
-            dests?.forEach {
-                visit(it, newPath, hT)
-            }
+            val isBoring = node.isSmallCave() && node in visited
+            if (!isBoring || !hadTwice)
+                connections[node]?.forEach {
+                    visit(it, visited + node, hadTwice || isBoring, onEnd)
+                }
         }
 
-        visit("start", emptyList())
-        return paths.count()
+        var count = 0
+        visit("start") { count++ }
+        return count
     }
 
+    companion object {
+        private fun String.isSmallCave() = first().isLowerCase()
+    }
 }
 
 fun main() {
     solve<Day12>("""
-        start-A
-        start-b
-        A-c
-        A-b
-        b-d
-        A-end
-        b-end
-    """.trimIndent(), 10, 36)
+        fs-end
+        he-DX
+        fs-he
+        start-DX
+        pj-DX
+        end-zg
+        zg-sl
+        zg-pj
+        pj-he
+        RW-he
+        fs-DX
+        pj-RW
+        zg-RW
+        start-pj
+        he-WI
+        zg-he
+        pj-fs
+        start-RW
+    """.trimIndent(), 226, 3509)
 }
