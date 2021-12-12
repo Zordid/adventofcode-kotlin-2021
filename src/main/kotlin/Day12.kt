@@ -32,7 +32,7 @@ class Day12 : Day(12, 2021, "Passage Pathing") {
     ) {
         if (cave == END) return onEndFound(visited + cave)
 
-        val howBoringIsThisCave = if (cave.isSmallCave() && cave in visited) 1 else 0
+        val howBoringIsThisCave = if (cave.isSmall && cave in visited) 1 else 0
         if (boredomTolerance - howBoringIsThisCave < 0) return
 
         connections[cave]?.forEach {
@@ -44,7 +44,7 @@ class Day12 : Day(12, 2021, "Passage Pathing") {
         private const val START = "start"
         private const val END = "end"
 
-        private fun String.isSmallCave() = first().isLowerCase()
+        private val String.isSmall: Boolean get() = first().isLowerCase()
     }
 }
 
