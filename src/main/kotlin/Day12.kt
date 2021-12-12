@@ -4,9 +4,9 @@ class Day12 : Day(12, 2021, "Passage Pathing") {
         .let {
             buildMap<String, MutableSet<String>> {
                 it.forEach { (s, e) ->
-                    if (s != "end" && e != "start")
+                    if (s != END && e != START)
                         getOrPut(s) { mutableSetOf() } += e
-                    if (e != "end" && s != "start")
+                    if (e != END && s != START)
                         getOrPut(e) { mutableSetOf() } += s
                 }
             }
@@ -19,7 +19,7 @@ class Day12 : Day(12, 2021, "Passage Pathing") {
             visited: List<String> = emptyList(),
             onEnd: (List<String>) -> Unit,
         ) {
-            if (node == "end") return onEnd(visited + node)
+            if (node == END) return onEnd(visited + node)
             val isBoring = node.isSmallCave() && node in visited
             if (!isBoring)
                 connections[node]?.forEach {
@@ -28,7 +28,7 @@ class Day12 : Day(12, 2021, "Passage Pathing") {
         }
 
         var count = 0
-        visit("start") { count++ }
+        visit(START) { count++ }
         return count
     }
 
@@ -40,7 +40,7 @@ class Day12 : Day(12, 2021, "Passage Pathing") {
             hadTwice: Boolean = false,
             onEnd: (List<String>) -> Unit,
         ) {
-            if (node == "end") return onEnd(visited + node)
+            if (node == END) return onEnd(visited + node)
 
             val isBoring = node.isSmallCave() && node in visited
             if (!isBoring || !hadTwice)
@@ -50,11 +50,14 @@ class Day12 : Day(12, 2021, "Passage Pathing") {
         }
 
         var count = 0
-        visit("start") { count++ }
+        visit(START) { count++ }
         return count
     }
 
     companion object {
+        private const val START = "start"
+        private const val END = "end"
+
         private fun String.isSmallCave() = first().isLowerCase()
     }
 }
