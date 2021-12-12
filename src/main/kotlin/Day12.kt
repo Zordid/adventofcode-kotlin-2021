@@ -33,7 +33,7 @@ class Day12 : Day(12, 2021, "Passage Pathing") {
         if (cave == END) return onEndFound(visited + cave)
 
         val howBoringIsThisCave = if (cave.isSmall && cave in visited) 1 else 0
-        if (boredomTolerance - howBoringIsThisCave < 0) return
+        if (boredomTolerance < howBoringIsThisCave) return
 
         connections[cave]?.forEach {
             visitCave(it, boredomTolerance - howBoringIsThisCave, visited + cave, onEndFound)
