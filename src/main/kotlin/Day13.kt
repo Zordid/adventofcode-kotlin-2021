@@ -1,57 +1,35 @@
-import utils.*
+import utils.Point
+import utils.plot
 
 class Day13 : Day(13, 2021) {
 
-    val p = chunkedInput().let {
-        it[0].map { it.extractAllIntegers().let { (x, y) -> Point(x, y) } } to it[1].map {
-            val (xy, v) = it.split("=")
-            xy.last() to v.toInt()
+    enum class XorY { X, Y }
+    data class FoldOperation(val xy: XorY, val line: Int)
+
+    private val chunks = chunkedInput()
+    private val paper = chunks[0].let {
+        it.map { it.extractAllIntegers().let { (x, y) -> Point(x, y) } }
+    }.show("Paper")
+
+    private val folds = chunks[1].map {
+        val (xy, v) = it.split("=")
+        FoldOperation(XorY.valueOf(xy.last().uppercase()), v.toInt())
+    }.show("Folds")
+
+    private fun List<Point>.fold(fold: FoldOperation): List<Point> = map { (x, y) ->
+        when {
+            fold.xy == XorY.Y && y > fold.line -> x to 2 * fold.line - y
+            fold.xy == XorY.X && x > fold.line -> 2 * fold.line - x to y
+            else -> x to y
         }
-    }
-    val paper = p.first.show("Paper")
-    val fold = p.second.show("Folds")
+    }.distinct()
 
-    fun List<Point>.foldY(yf: Int): List<Point> {
-        return map { (x, y) ->
-            if (y > yf)
-                x to yf - (y - yf)
-            else
-                x to y
-        }.distinct()
-    }
+    override fun part1() = paper.fold(folds.first()).size
 
-    fun List<Point>.foldX(xf: Int): List<Point> {
-        return map { (x, y) ->
-            if (x > xf)
-                xf - (x - xf) to y
-            else
-                x to y
-        }.distinct()
-    }
-
-    override fun part1(): Any {
-        var p = paper
-        for ((xy, v) in fold.take(1)) {
-            p = when (xy) {
-                'x' -> p.foldX(v)
-                'y' -> p.foldY(v)
-                else -> error("")
-            }
-        }
-        return p.size
-    }
-
-    override fun part2(): Any {
-        var p = paper
-        for ((xy, v) in fold) {
-            p = when (xy) {
-                'x' -> p.foldX(v)
-                'y' -> p.foldY(v)
-                else -> error("")
-            }
-        }
-        p.plot()
-        return Unit
+    override fun part2() {
+        folds.fold(paper) { acc, fold ->
+            acc.fold(fold)
+        }.plot()
     }
 }
 
@@ -78,5 +56,5 @@ fun main() {
 
         fold along y=7
         fold along x=5
-    """.trimIndent(), 17, null)
+    """.trimIndent(), 17)
 }
