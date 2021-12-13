@@ -1,25 +1,24 @@
 import utils.Point
 import utils.plot
 
-class Day13 : Day(13, 2021) {
+class Day13 : Day(13, 2021, "Transparent Origami") {
 
-    enum class XorY { X, Y }
-    data class FoldOperation(val xy: XorY, val line: Int)
+    data class FoldOperation(val xy: Char, val line: Int)
 
     private val chunks = chunkedInput()
-    private val paper = chunks[0].let {
-        it.map { it.extractAllIntegers().let { (x, y) -> Point(x, y) } }
+    private val paper = chunks[0].map {
+        it.extractAllIntegers().let { (x, y) -> Point(x, y) }
     }.show("Paper")
 
     private val folds = chunks[1].map {
         val (xy, v) = it.split("=")
-        FoldOperation(XorY.valueOf(xy.last().uppercase()), v.toInt())
+        FoldOperation(xy.last(), v.toInt())
     }.show("Folds")
 
     private fun List<Point>.fold(fold: FoldOperation): List<Point> = map { (x, y) ->
         when {
-            fold.xy == XorY.Y && y > fold.line -> x to 2 * fold.line - y
-            fold.xy == XorY.X && x > fold.line -> 2 * fold.line - x to y
+            fold.xy == 'y' && y > fold.line -> x to 2 * fold.line - y
+            fold.xy == 'x' && x > fold.line -> 2 * fold.line - x to y
             else -> x to y
         }
     }.distinct()
