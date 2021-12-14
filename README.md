@@ -10,13 +10,31 @@ to get up at 5:45 in the morning for almost a month... the addiction is real!
 If you are into programming, logic, maybe also a little into competition, this one is for you as well!
 
 ### Overview of the puzzles
-|Day |Title                             |Remarks
-|---:|----------------------------------|----|
-|  1 |Sonar Sweep                       |Let's get things started by some sliding windows!|
-|  2 |Dive!                             |Figure out a submarines course from numbers      |
-|  3 |Binary Diagnostic                 |Some bit magic that can drive you nuts           |
+|Day |Title                             |Runtime|Remarks
+|---:|----------------------------------|---:|----|
+|  1 |Sonar Sweep                       |    |Let's get things started by some sliding windows!|
+|  2 |Dive!                             |    |Figure out a submarines course from numbers      |
+|  3 |Binary Diagnostic                 |    |Some bit magic that can drive you nuts           |
+| 14 |Extended Polymerization           |2ms |It's all about recursion plus caching...|
 
 ## My logbook of 2021
+
+### Day 14: Extended Polymerization
+What a cool hack! In the beginning, the straight forward processing approach proved correct and
+feasible for part 1. 10 iterations of polymerization are possible without further thought.
+But for 40 iterations, the world is a different one. Took me about half an hour to crack this - 
+shame on me - to have a hacky, but feasible 2-step approach, where I did 20 iterations of the complete
+string and with this intermediate result, I focused on a cached-what-happens-to-each-pair-approach.
+So, windowing over the intermediate and asking "what happens to this pair, what happens to the next pair"
+while keeping the results in a cache map.
+Worked. 17 seconds!
+
+But after I got my 2 stars, no, that's not what I am happy with. So, back to the drawing board.
+The result is amazingly simple. For each pair and the resulting statistics (how many chars?) the
+recursively working fun needs a cache wrapper using getOrDefault around it. Done.
+Optimizing the data structure to hold the counts into a simple LongArray (of all capital chars 'A' 
+through 'Z' and their respective counts) leads to a 2ms second solution for part 2. I'm satisfied with
+that.
 
 ### Day 3: Binary Diagnostic
 What a hacky start for a relatively easy task. This turned out to be a challenge to 

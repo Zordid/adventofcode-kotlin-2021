@@ -37,10 +37,10 @@ class Day14 : Day(14, 2021, "Extended Polymerization") {
         private operator fun LongArray.plus(other: LongArray) =
             LongArray(SIZE) { this[it] + other[it] }
 
-        private fun Char.stats(): LongArray =
+        private fun Char.stats() =
             LongArray(SIZE) { if (it == this.code - 'A'.code) 1L else 0L }
 
-        private fun LongArray.mostMinusLeast(): Long =
+        private fun LongArray.mostMinusLeast() =
             asIterable().filter { it != 0L }.minMaxOrNull()!!.let { it.second - it.first }
     }
 
