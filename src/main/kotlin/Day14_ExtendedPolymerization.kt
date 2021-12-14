@@ -2,7 +2,7 @@ import utils.minMaxOrNull
 
 class Day14 : Day(14, 2021, "Extended Polymerization") {
 
-    private val template = chunkedInput()[0].first()
+    private val template = chunkedInput()[0].single()
     private val rules = chunkedInput()[1].associate {
         val (from, to) = it.split(" -> ")
         (from[0] to from[1]) to to.first()
@@ -11,23 +11,20 @@ class Day14 : Day(14, 2021, "Extended Polymerization") {
     override fun part1(): Long = template.process(10).mostMinusLeast()
     override fun part2(): Long = template.process(40).mostMinusLeast()
 
-    private fun String.process(steps: Int): Map<Char, Long> =
+    private fun String.process(steps: Int): LongArray =
         windowed(2)
-            .fold(mapOf(first() to 1L)) { acc, p ->
+            .fold(first().stats()) { acc, p ->
                 acc + (p[0] to p[1]).stats(steps)
             }
 
-    private fun Map<Char, Long>.mostMinusLeast(): Long =
-        values.minMaxOrNull()!!.let { it.second - it.first }
+    private val globalCache =
+        mutableMapOf<Triple<Char, Char, Int>, LongArray>()
 
-    private val globalCache = mutableMapOf<Triple<Char, Char, Int>, Map<Char, Long>>()
-
-    private fun Pair<Char, Char>.stats(steps: Int): Map<Char, Long> =
+    private fun Pair<Char, Char>.stats(steps: Int): LongArray =
         globalCache.getOrPut(Triple(first, second, steps)) {
             val insertion = rules[this]
             when {
-                steps == 0 || insertion == null ->
-                    mapOf(second to 1L)
+                steps == 0 || insertion == null -> second.stats()
                 else ->
                     ((first to insertion).stats(steps - 1) +
                             (insertion to second).stats(steps - 1))
@@ -35,13 +32,16 @@ class Day14 : Day(14, 2021, "Extended Polymerization") {
         }
 
     companion object {
-        private operator fun Map<Char, Long>.plus(other: Map<Char, Long>): Map<Char, Long> =
-            buildMap(size) {
-                putAll(this@plus)
-                other.forEach { (k, v) ->
-                    put(k, getOrDefault(k, 0) + v)
-                }
-            }
+        private const val SIZE = 'Z' - 'A'
+
+        private operator fun LongArray.plus(other: LongArray) =
+            LongArray(SIZE) { this[it] + other[it] }
+
+        private fun Char.stats(): LongArray =
+            LongArray(SIZE) { if (it == this.code - 'A'.code) 1L else 0L }
+
+        private fun LongArray.mostMinusLeast(): Long =
+            asIterable().filter { it != 0L }.minMaxOrNull()!!.let { it.second - it.first }
     }
 
 }
