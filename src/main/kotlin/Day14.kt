@@ -1,50 +1,48 @@
-class Day14 : Day(14, 2021) {
+import utils.minMaxOrNull
 
-    val template = input.first().show("Template")
-    val insertions = chunkedInput()[1].map {
-        val (a, b) = it.split(" -> ")
-        a to b
-    }.toMap()
+class Day14 : Day(14, 2021, "Extended Polymerization") {
 
-    fun String.process(): String {
-        val w = this.windowed(2)
-        return w.joinToString(prefix = "${this[0]}", separator = "") { pair ->
-            insertions[pair]?.let { "$it${pair[1]}" } ?: pair
-        }
+    private val template = chunkedInput()[0].first()
+    private val rules = chunkedInput()[1].associate {
+        val (from, to) = it.split(" -> ")
+        (from[0] to from[1]) to to.first()
     }
 
-    override fun part1(): Any {
-        val r = (1..10).fold(template) { acc, _ -> acc.process() }
-        val stats = r.groupingBy { it }.eachCount()
-        val least = stats.minByOrNull { (_, c) -> c }!!.value
-        val most = stats.maxByOrNull { (_, c) -> c }!!.value
-        return most - least
-    }
+    override fun part1(): Long = template.process(10).mostMinusLeast()
+    override fun part2(): Long = template.process(40).mostMinusLeast()
 
-    override fun part2(): Any {
-        val statsCache = mutableMapOf<String, Map<Char, Int>>()
-        val r20 = (1..20).fold(template) { acc, _ -> acc.process() }
-        val stats = mutableMapOf(template.first() to 1L)
-        r20.windowed(2).forEach { pair ->
-            val ms = statsCache.getOrPut(pair) {
-                println("Processing $pair...")
-                val r = (1..20).fold(pair) { acc, _ -> acc.process() }
-                r.drop(1).groupingBy { it }.eachCount()
+    private fun String.process(steps: Int): Map<Char, Long> =
+        windowed(2)
+            .fold(mapOf(first() to 1L)) { acc, p ->
+                acc + (p[0] to p[1]).stats(steps)
             }
-            ms.forEach { (k, c) ->
-                stats[k] = (stats[k] ?: 0) + c
+
+    private fun Map<Char, Long>.mostMinusLeast(): Long =
+        values.minMaxOrNull()!!.let { it.second - it.first }
+
+    private val globalCache = mutableMapOf<Triple<Char, Char, Int>, Map<Char, Long>>()
+
+    private fun Pair<Char, Char>.stats(steps: Int): Map<Char, Long> =
+        globalCache.getOrPut(Triple(first, second, steps)) {
+            val insertion = rules[this]
+            when {
+                steps == 0 || insertion == null ->
+                    mapOf(second to 1L)
+                else ->
+                    ((first to insertion).stats(steps - 1) +
+                            (insertion to second).stats(steps - 1))
             }
         }
-        val least = stats.minByOrNull { (_, c) -> c }!!.value
-        val most = stats.maxByOrNull { (_, c) -> c }!!.value
-        return most - least
+
+    companion object {
+        private operator fun Map<Char, Long>.plus(other: Map<Char, Long>): Map<Char, Long> =
+            buildMap(size) {
+                putAll(this@plus)
+                other.forEach { (k, v) ->
+                    put(k, getOrDefault(k, 0) + v)
+                }
+            }
     }
-
-    /*
-
-NB - NBB - NBBNB -
-
-     */
 
 }
 
