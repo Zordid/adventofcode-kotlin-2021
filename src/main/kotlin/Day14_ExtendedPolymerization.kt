@@ -2,10 +2,10 @@ import utils.minMaxOrNull
 
 class Day14 : Day(14, 2021, "Extended Polymerization") {
 
-    private val template = chunkedInput()[0].single()
-    private val rules = chunkedInput()[1].associate {
-        val (from, to) = it.split(" -> ")
-        (from[0] to from[1]) to to.first()
+    private val template = inputChunks[0].single()
+    private val rules = inputChunks[1].associate {
+        val (pair, insertion) = it.split(" -> ")
+        (pair[0] to pair[1]) to insertion.single()
     }
 
     override fun part1(): Long = template.process(10).mostMinusLeast()
@@ -26,8 +26,8 @@ class Day14 : Day(14, 2021, "Extended Polymerization") {
             when {
                 steps == 0 || insertion == null -> second.stats()
                 else ->
-                    ((first to insertion).stats(steps - 1) +
-                            (insertion to second).stats(steps - 1))
+                    (first to insertion).stats(steps - 1) +
+                            (insertion to second).stats(steps - 1)
             }
         }
 

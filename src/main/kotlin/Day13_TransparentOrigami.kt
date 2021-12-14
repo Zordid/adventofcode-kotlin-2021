@@ -5,12 +5,11 @@ class Day13 : Day(13, 2021, "Transparent Origami") {
 
     data class FoldOperation(val xy: Char, val line: Int)
 
-    private val chunks = chunkedInput()
-    val paper = chunks[0].map {
+    val paper = inputChunks[0].map {
         it.extractAllIntegers().let { (x, y) -> Point(x, y) }
     }.show("Paper")
 
-    val folds = chunks[1].map {
+    val folds = inputChunks[1].map {
         val (xy, v) = it.split("=")
         FoldOperation(xy.last(), v.toInt())
     }.show("Folds")

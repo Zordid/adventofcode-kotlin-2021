@@ -103,6 +103,10 @@ abstract class Day(val day: Int, private val year: Int = 2021, val title: String
     val inputAsLongs: List<Long> by lazy { rawInput.map { it.extractLong() }.show("Long") }
     val inputAsString: String by lazy { rawInput.joinToString("\n").also { listOf(it).show("One string") } }
 
+    @Suppress("MemberVisibilityCanBePrivate")
+    var chunkDelimiter: (String) -> Boolean = String::isEmpty
+    val inputChunks: List<List<String>> by lazy { chunkedInput(chunkDelimiter) }
+
     fun chunkedInput(delimiter: (String) -> Boolean = String::isEmpty): List<List<String>> {
         val result = mutableListOf<List<String>>()
         var currentSubList: MutableList<String>? = null
@@ -117,7 +121,7 @@ abstract class Day(val day: Int, private val year: Int = 2021, val title: String
                     currentSubList.add(line)
             }
         }
-        return result.show("Chunked into ${result.size} chunks")
+        return result.show("Chunked into ${result.size} chunks of")
     }
 
     fun <T> mappedInput(lbd: (String) -> T): List<T> =
