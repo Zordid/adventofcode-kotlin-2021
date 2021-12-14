@@ -66,7 +66,7 @@ abstract class PixelGameEngine {
         screenHeight: Int,
         pixelWidth: Int,
         pixelHeight: Int,
-        appName: String = "PixelGameEngine"
+        appName: String = "PixelGameEngine",
     ) {
         require(screenWidth > 0 && screenHeight > 0) { "Unsupported dimensions: $screenWidth x $screenHeight" }
         require(pixelWidth > 0 && pixelHeight > 0) { "Unsupported pixel dimensions: $pixelWidth x $pixelHeight" }
@@ -99,6 +99,7 @@ abstract class PixelGameEngine {
     }
 
     private var halted = false
+    var hold = 0L
 
     open fun isActive() = true
 
@@ -113,6 +114,10 @@ abstract class PixelGameEngine {
                 displayBuffer = buffer
                 buffer = buffer.copyOf()
                 panel.repaint()
+                if (hold > 0L) {
+                    sleep(hold)
+                    hold = 0L
+                }
             }
             millisPerFrame?.let {
                 val sleepTime = (it - time).coerceAtLeast(0)
@@ -326,6 +331,10 @@ abstract class PixelGameEngine {
      * Sleeps for [millis] milliseconds. Can be used to slow down the animation in [onUpdate].
      */
     fun sleep(millis: Long) = Thread.sleep(millis)
+
+    fun hold(millis: Long) {
+        hold = millis
+    }
 
     fun stop() {
         halted = true

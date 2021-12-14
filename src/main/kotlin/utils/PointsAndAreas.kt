@@ -138,6 +138,15 @@ fun Iterable<Point>.boundingArea(): Area? {
     return (minX.x to minY.y) to (maxX.x to maxY.y)
 }
 
+fun Collection<Point>.plot(on: Char = '#', off: Char = ' ') {
+    val area = boundingArea() ?: return
+    for (y in area.first.y..area.second.y) {
+        println((area.first.x..area.second.x).map { x ->
+            if (Point(x, y) in this) on else off
+        }.joinToString(""))
+    }
+}
+
 interface Direction {
     val name: String
     val right: Direction

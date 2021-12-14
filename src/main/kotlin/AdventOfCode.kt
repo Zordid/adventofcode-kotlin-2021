@@ -6,6 +6,8 @@ import kotlin.time.Duration
 import kotlin.time.ExperimentalTime
 import kotlin.time.measureTimedValue
 
+const val FAST_MODE = false
+
 @ExperimentalTime
 fun main() {
     verbose = false
@@ -45,25 +47,35 @@ var globalTestData: String? = null
 inline fun <reified T : Day> create(): T =
     T::class.constructors.first { it.parameters.isEmpty() }.call()
 
-inline fun <reified T : Day> solve(testData: String? = null, expectedPart1: Any? = null, expectedPart2: Any? = null) {
+inline fun <reified T : Day> solve(
+    testData: String? = null,
+    expectedPart1: Any? = null,
+    expectedPart2: Any? = null,
+    onlyTest: Boolean = false,
+) {
     if (testData != null && (expectedPart1 != null || expectedPart2 != null)) {
         globalTestData = testData
         with(create<T>()) {
-            if (expectedPart1 != null)
+            if (expectedPart1 != null) {
+                println("Checking part 1... ")
                 part1().let { result ->
                     check(result.toString() == expectedPart1.toString()) {
                         "Part 1 result failed!\nExpected: $expectedPart1\nActual: $result"
                     }
                 }
-            if (expectedPart2 != null)
+            }
+            if (expectedPart2 != null) {
+                println("Checking part 2... ")
                 part2().let { result ->
                     check(result.toString() == expectedPart2.toString()) {
                         "Part 2 result failed!\nExpected: $expectedPart2\nActual: $result"
                     }
                 }
+            }
         }
     }
-    create<T>().solve()
+    if (!onlyTest)
+        create<T>().solve()
 }
 
 
