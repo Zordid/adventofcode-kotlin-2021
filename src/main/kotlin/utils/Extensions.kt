@@ -80,6 +80,9 @@ inline fun <T> Grid<T>.forArea(f: (p: Point) -> Unit) {
 fun <T, R> Grid<T>.mapValues(transform: (T) -> R): Grid<R> =
     map { it.map(transform) }
 
+fun <T, R> Grid<T>.mapValuesIndexed(transform: (Point, T) -> R): Grid<R> =
+    mapIndexed { y, r -> r.mapIndexed { x, v -> transform(x to y, v) } }
+
 operator fun <T> Grid<T>.get(p: Point): T =
     if (p.y in indices && p.x in this[p.y].indices) this[p.y][p.x]
     else error("Point $p not in grid of area ${area()}")
