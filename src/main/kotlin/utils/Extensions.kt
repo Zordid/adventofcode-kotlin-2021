@@ -1,3 +1,5 @@
+@file:Suppress("unused")
+
 package utils
 
 fun <T : Comparable<T>> Iterable<T>.minMaxOrNull(): Pair<T, T>? {
@@ -83,9 +85,20 @@ fun <T, R> Grid<T>.mapValues(transform: (T) -> R): Grid<R> =
 fun <T, R> Grid<T>.mapValuesIndexed(transform: (Point, T) -> R): Grid<R> =
     mapIndexed { y, r -> r.mapIndexed { x, v -> transform(x to y, v) } }
 
+fun <T> Grid<T>.println(transform: (Point, T) -> String = { _, value -> value.toString() }) {
+    println(withIndex().joinToString(System.lineSeparator()) { (y, row) ->
+        row.withIndex().joinToString("") { (x, value) -> transform(x to y, value) }
+    })
+}
+
 operator fun <T> Grid<T>.get(p: Point): T =
-    if (p.y in indices && p.x in this[p.y].indices) this[p.y][p.x]
-    else error("Point $p not in grid of area ${area()}")
+    if (p.y in indices && p.x in this[p.y].indices) this[p.y][p.x] else error("Point $p not in grid of area ${area()}")
+
+fun <T> Grid<T>.getOrNull(p: Point): T? =
+    if (p.y in indices && p.x in this[p.y].indices) this[p.y][p.x] else null
+
+fun <T> Grid<T>.getOrElse(p: Point, default: (Point) -> T): T =
+    if (p.y in indices && p.x in this[p.y].indices) this[p.y][p.x] else default(p)
 
 operator fun <T> MutableGrid<T>.set(p: Point, v: T) {
     if (p.y in indices && p.x in this[p.y].indices) this[p.y][p.x] = v
@@ -93,9 +106,13 @@ operator fun <T> MutableGrid<T>.set(p: Point, v: T) {
 }
 
 operator fun List<String>.get(p: Point): Char =
-    if (p.y in indices && p.x in this[p.y].indices) this[p.y][p.x]
-    else error("Point $p not in grid of area ${area()}")
+    if (p.y in indices && p.x in this[p.y].indices) this[p.y][p.x] else error("Point $p not in grid of area ${area()}")
 
+fun List<String>.getOrNull(p: Point): Char? =
+    if (p.y in indices && p.x in this[p.y].indices) this[p.y][p.x] else null
+
+fun List<String>.getOrElse(p: Point, default: (Point) -> Char): Char =
+    if (p.y in indices && p.x in this[p.y].indices) this[p.y][p.x] else default(p)
 
 fun <T> Grid<T>.matchingIndices(predicate: (T) -> Boolean): List<Point> =
     flatMapIndexed { y, l -> l.mapIndexedNotNull { x, item -> if (predicate(item)) x to y else null } }

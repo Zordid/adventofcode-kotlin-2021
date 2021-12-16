@@ -1,5 +1,5 @@
 plugins {
-    id 'org.jetbrains.kotlin.jvm' version '1.6.0'
+    id 'org.jetbrains.kotlin.jvm' version '1.6.10'
 }
 
 group 'org.example'
@@ -14,13 +14,13 @@ test {
 }
 
 dependencies {
-    implementation 'org.jetbrains.kotlin:kotlin-stdlib-jdk8:1.6.0'
+    implementation 'org.jetbrains.kotlin:kotlin-stdlib-jdk8:1.6.10'
+    implementation "org.jetbrains.kotlin:kotlin-reflect:1.6.10"
     implementation 'org.jetbrains.kotlinx:kotlinx-coroutines-core:1.5.2'
     implementation 'org.reflections:reflections:0.9.12'
-    //implementation 'guru.nidi:graphviz-kotlin:0.18.1'
-    testImplementation 'io.kotest:kotest-assertions-core-jvm:5.0.1'
+    implementation 'com.github.ajalt.mordant:mordant:2.0.0-beta4'
     testImplementation 'org.junit.jupiter:junit-jupiter:5.8.2'
+    testImplementation 'io.kotest:kotest-assertions-core-jvm:5.0.1'
     testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine:5.8.2'
-    implementation "org.jetbrains.kotlin:kotlin-reflect:1.6.0"
     implementation 'org.slf4j:slf4j-nop:1.7.32'
 }

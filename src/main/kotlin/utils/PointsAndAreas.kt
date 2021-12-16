@@ -1,3 +1,5 @@
+@file:Suppress("unused")
+
 package utils
 
 import kotlin.math.absoluteValue
@@ -28,6 +30,7 @@ fun Point.neighbor(direction: Direction, steps: Int = 1) = this + (direction.vec
  * calculates the list of the four direct neighbors of the point.
  */
 fun Point.directNeighbors(): List<Point> = Direction4.allVectors.map { this + it }
+fun Point.directNeighbors(area: Area): List<Point> = Direction4.allVectors.map { this + it }.filter { it in area }
 fun Point.surroundingNeighbors(): List<Point> = Direction8.allVectors.map { this + it }
 
 val origin: Point = 0 to 0
@@ -44,6 +47,14 @@ infix operator fun Point.div(factor: Int) = when (factor) {
     1 -> this
     else -> x / factor to y / factor
 }
+
+infix operator fun Point.div(factor: Point) = when (factor) {
+    1 to 1 -> this
+    else -> x / factor.x to y / factor.y
+}
+
+infix operator fun Point.rem(factor: Int): Point = x % factor to y % factor
+infix operator fun Point.rem(factor: Point): Point = x % factor.x to y % factor.y
 
 fun Point.rotateLeft90(times: Int = 1): Point = when (times % 4) {
     0 -> this
@@ -66,13 +77,28 @@ operator fun Point.compareTo(other: Point): Int =
 
 fun Point.toArea(): Area = this to this
 
+operator fun Point.rangeTo(other: Point): Sequence<Point> = when (other) {
+    this -> sequenceOf(this)
+    else -> sequence {
+        val d = Direction8.ofVector(this@rangeTo, other) ?: error("not a usable direction vector")
+        var p = this@rangeTo
+        while (p != other) {
+            yield(p)
+            p += d
+        }
+        yield(other)
+    }
+}
+
 fun Area.isValid(): Boolean = first.x <= second.x && first.y <= second.y
 fun Area.fix(): Area = if (isValid()) this else listOf(first, second).boundingArea()!!
 
-fun Area.grow(by: Int = 1) = upperLeft.left(by).up(by) to lowerRight.right(by).down(by)
-fun Area.shrink(by: Int = 1) = upperLeft.left(-by).up(-by) to lowerRight.right(-by).down(-by)
+fun Area.grow(by: Int = 1): Area = upperLeft.left(by).up(by) to lowerRight.right(by).down(by)
+fun Area.shrink(by: Int = 1): Area = upperLeft.left(-by).up(-by) to lowerRight.right(-by).down(-by)
+fun Area.scale(by: Int): Area = upperLeft to upperLeft + (width * by - 1 to height * by - 1)
 
 fun Area.isEmpty() = size == 0
+fun Area.isNotEmpty() = !isEmpty()
 val Area.size: Int
     get() = width * height
 
@@ -132,18 +158,27 @@ val Area.width: Int
 val Area.height: Int
     get() = (second.y - first.y + 1).coerceAtLeast(0)
 
+fun <T> Area.mutableGridOf(init: (Point) -> T): MutableGrid<T> {
+    require(isNotEmpty()) { "Area $this is empty and cannot create a grid" }
+    return (0 until height).map { y ->
+        (0 until width).map { x -> init(x to y) }.toMutableList()
+    }
+}
+
+fun <T> Area.createGrid(init: (Point) -> T): Grid<T> = mutableGridOf(init)
+
 fun Iterable<Point>.boundingArea(): Area? {
     val (minX, maxX) = minMaxByOrNull { it.x } ?: return null
     val (minY, maxY) = minMaxByOrNull { it.y }!!
     return (minX.x to minY.y) to (maxX.x to maxY.y)
 }
 
-fun Collection<Point>.plot(on: Char = '#', off: Char = ' ') {
-    val area = boundingArea() ?: return
-    for (y in area.first.y..area.second.y) {
-        println((area.first.x..area.second.x).map { x ->
+fun Collection<Point>.plot(on: Char = '#', off: Char = ' '): String {
+    val area = boundingArea() ?: return ""
+    return (area.first.y..area.second.y).joinToString(System.lineSeparator()) { y ->
+        (area.first.x..area.second.x).map { x ->
             if (Point(x, y) in this) on else off
-        }.joinToString(""))
+        }.joinToString("")
     }
 }
 

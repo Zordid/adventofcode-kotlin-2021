@@ -24,11 +24,11 @@ class Day13 : Day(13, 2021, "Transparent Origami") {
 
     override fun part1() = paper.fold(folds.first()).size
 
-    override fun part2() {
+    override fun part2() =
         folds.fold(paper) { acc, fold ->
             acc.fold(fold)
         }.plot()
-    }
+
 }
 
 fun main() {
