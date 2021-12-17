@@ -134,7 +134,7 @@ abstract class PixelGameEngine {
     /**
      * Draws a pixel on the screen in the defined color.
      * @param x the x coordinate
-     * @param y the util.getY coordinate
+     * @param y the y coordinate
      * @param color the color to draw
      */
     @JvmOverloads
@@ -149,9 +149,9 @@ abstract class PixelGameEngine {
      * Draws a line on the screen in the defined color using the given pattern.
      *
      * @param x1 start x coordinate
-     * @param y1 start util.getY coordinate
+     * @param y1 start y coordinate
      * @param x2 end x coordinate
-     * @param y2 end util.getY coordinate
+     * @param y2 end y coordinate
      * @param color the color to use
      * @param pattern the pattern to use
      */
@@ -209,7 +209,7 @@ abstract class PixelGameEngine {
             }
 
             if (rol()) draw(x, y, color)
-            for (i in 0 until xe) {
+            while (x < xe) {
                 x += 1
                 if (px < 0)
                     px += 2 * dy1
@@ -234,7 +234,7 @@ abstract class PixelGameEngine {
             }
 
             if (rol()) draw(x, y, color)
-            for (i in 0 until ye) {
+            while (y < ye) {
                 y += 1
                 if (py < 0)
                     py += 2 * dx1
