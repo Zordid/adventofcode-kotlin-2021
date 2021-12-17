@@ -166,6 +166,7 @@ fun <T> Area.mutableGridOf(init: (Point) -> T): MutableGrid<T> {
 }
 
 fun <T> Area.createGrid(init: (Point) -> T): Grid<T> = mutableGridOf(init)
+fun <T> Area.createMutableGrid(init: (Point) -> T): MutableGrid<T> = mutableGridOf(init)
 
 fun Iterable<Point>.boundingArea(): Area? {
     val (minX, maxX) = minMaxByOrNull { it.x } ?: return null
