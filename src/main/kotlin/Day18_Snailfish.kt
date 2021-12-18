@@ -2,7 +2,6 @@ import utils.combinations
 import utils.permutations
 import java.lang.Integer.max
 
-
 class Day18 : Day(18, 2021, "Snailfish") {
     private val numbers = mappedInput { SnailFishNumber.fromString(it) }
 
@@ -20,23 +19,16 @@ class Day18 : Day(18, 2021, "Snailfish") {
 sealed class SnailFishNumber {
     abstract val depth: Int
     abstract val magnitude: Int
-    abstract fun addToLeftValue(v: Int): SnailFishNumber
-    abstract fun addToRightValue(v: Int): SnailFishNumber
 
-    data class SnailPair(var left: SnailFishNumber, var right: SnailFishNumber) : SnailFishNumber() {
+    data class SnailPair(val left: SnailFishNumber, val right: SnailFishNumber) : SnailFishNumber() {
         override val depth get() = max(left.depth, right.depth) + 1
         override val magnitude get() = 3 * left.magnitude + 2 * right.magnitude
-        override fun addToLeftValue(v: Int) = if (v == 0) this else SnailPair(left.addToLeftValue(v), right)
-        override fun addToRightValue(v: Int) = if (v == 0) this else SnailPair(left, right.addToRightValue(v))
-
         override fun toString() = "[$left,$right]"
     }
 
-    data class SnailNumber(var value: Int) : SnailFishNumber() {
+    data class SnailNumber(val value: Int) : SnailFishNumber() {
         override val depth = 0
         override val magnitude get() = value
-        override fun addToLeftValue(v: Int) = if (v == 0) this else SnailNumber(value + v)
-        override fun addToRightValue(v: Int) = if (v == 0) this else SnailNumber(value + v)
         override fun toString() = value.toString()
     }
 
@@ -58,37 +50,38 @@ sealed class SnailFishNumber {
     private fun explodeFully(): SnailFishNumber {
         var exploded = this
         while (exploded.depth > 4)
-            exploded = exploded.explode(0).second
+            exploded = exploded.explodeFirst(0).second
         return exploded
     }
 
-    private fun explode(level: Int): Triple<Int, SnailFishNumber, Int> {
+    private fun explodeFirst(level: Int): Triple<Int, SnailFishNumber, Int> {
         if (this !is SnailPair) return Triple(0, this, 0)
 
         if (level == 4)
             return Triple((left as SnailNumber).value, SnailNumber(0), (right as SnailNumber).value)
 
         // a pair, but not on level 4
-        left.explode(level + 1).also { (leftOut, exploded, rightOut) ->
+        left.explodeFirst(level + 1).also { (leftOut, exploded, rightOut) ->
             if (exploded != left)
-                return Triple(leftOut, SnailPair(exploded, right.addToLeftValue(rightOut)), 0)
-
+                return Triple(leftOut, SnailPair(exploded, rightOut + right), 0)
         }
-        right.explode(level + 1).also { (leftOut, exploded, rightOut) ->
+        right.explodeFirst(level + 1).also { (leftOut, exploded, rightOut) ->
             if (exploded != right)
-                return Triple(0, SnailPair(left.addToRightValue(leftOut), exploded), rightOut)
+                return Triple(0, SnailPair(left + leftOut, exploded), rightOut)
         }
 
         return Triple(0, this, 0)
     }
 
     private fun splitFirst(): SnailFishNumber =
-        when {
-            this is SnailNumber && value >= 10 -> SnailPair(
-                SnailNumber(value / 2),
-                SnailNumber(value - value / 2)
-            )
-            this is SnailPair -> {
+        when (this) {
+            is SnailNumber ->
+                if (value < 10) this
+                else SnailPair(
+                    SnailNumber(value / 2),
+                    SnailNumber(value - value / 2)
+                )
+            is SnailPair -> {
                 val leftSplit = left.splitFirst()
                 if (left != leftSplit)
                     SnailPair(leftSplit, right)
@@ -97,9 +90,7 @@ sealed class SnailFishNumber {
                     if (right != rightSplit) SnailPair(left, rightSplit) else this
                 }
             }
-            else -> this
         }
-
 
     companion object {
         fun fromString(s: String): SnailFishNumber {
@@ -118,8 +109,21 @@ sealed class SnailFishNumber {
             return s.getPairs().first
         }
 
+        operator fun Int.plus(other: SnailFishNumber): SnailFishNumber =
+            if (this != 0) when (other) {
+                is SnailNumber -> SnailNumber(other.value + this)
+                is SnailPair -> SnailPair(this + other.left, other.right)
+            } else other
+
+        operator fun SnailFishNumber.plus(other: Int): SnailFishNumber =
+            if (other != 0) when (this) {
+                is SnailNumber -> SnailNumber(value + other)
+                is SnailPair -> SnailPair(left, right + other)
+            } else this
+
     }
 }
+
 
 fun main() {
     solve<Day18>("""
