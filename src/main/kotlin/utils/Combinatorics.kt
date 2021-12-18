@@ -2,6 +2,7 @@ package utils
 
 /**
  * Generates all combinations of the elements of the given list for the requested size.
+ * Note: combinations do not include all their permutations!
  * @receiver the list to take elements from
  * @param size the size of the combinations to create
  * @return a sequence of all combinations
@@ -31,7 +32,7 @@ fun <T> List<T>.permutations(): Sequence<List<T>> =
         else -> {
             val head = first()
             val tail = subList(1, size)
-            tail.permutations().flatMap { perm->
+            tail.permutations().flatMap { perm ->
                 (0..perm.size).asSequence().map { perm.copyAndInsert(it, head) }
             }
         }
