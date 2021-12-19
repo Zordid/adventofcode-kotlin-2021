@@ -51,10 +51,6 @@ class Day19 : Day(19, 2021, "Beacon Scanner") {
     }
 
     override fun part1(): Any {
-
-        val fixed = sc.take(1).toMutableList()
-        val open = sc.drop(1).toMutableList()
-//
 //        val combinations = sc.combinations(2).toList()
 //        val cluster = mutableListOf<List<Scanner>>()
 //        println("Checking ${combinations.size} combinations...")
@@ -107,38 +103,8 @@ class Day19 : Day(19, 2021, "Beacon Scanner") {
 //        return result.flatMap { it.beacons }.toSet().size
 
 
-        val cache = mutableMapOf<Pair<Scanner, Scanner>, Triple<Scanner, Orientation, Point3D>?>()
-
-        val beaconsTotal = fixed.single().beacons.toMutableSet()
-        while (open.isNotEmpty()) {
-            println("Fixed: ${fixed.size} with ${beaconsTotal.size} beacons - open ${open.size} - cached ${cache.size}")
-            //   for (f in fixed) {
-            val matched = mutableListOf<Scanner>()
-            for (o in open) {
-                val r = overlap(beaconsTotal, o)
-                if (r != null) {
-                    println("Scanner ${o.n} found relative to 0 at ${r.second}!")
-                    val fixedScanner = r.first
-                    matched += o
-                    fixed += fixedScanner
-                    beaconsTotal += fixedScanner.beacons
-
-                    //require(f.beacons.count { it in fixedScanner.beacons } == r.third)
-                }
-            }
-            open -= matched.toSet()
-            if (matched.isEmpty()) error("no matches")
-            //if (matched.isNotEmpty()) break
-            //    }
-        }
-
-        println("Matched ${fixed.size} scanners")
-
-        allScanners = fixed
-        return beaconsTotal.size
+        return allScanners.flatMapTo(mutableSetOf()) { it.beacons }.size
     }
-
-    var allScanners: List<Scanner> = emptyList()
 
     override fun part2(): Any {
         val distances = allScanners.toList().combinations(2).map { (asc, bsc) ->
@@ -148,6 +114,37 @@ class Day19 : Day(19, 2021, "Beacon Scanner") {
         }
 
         return distances.maxOrNull()!!
+    }
+
+    val allScanners: List<Scanner> by lazy {
+        val fixed = sc.take(1).toMutableList()
+        val open = sc.drop(1).toMutableList()
+
+        val cache = mutableMapOf<Int, Triple<Scanner, Orientation, Point3D>?>()
+
+        val beaconsTotal = fixed.single().beacons.toMutableSet()
+        while (open.isNotEmpty()) {
+            println("Fixed: ${fixed.size} with ${beaconsTotal.size} beacons - open ${open.size} - cached ${cache.size}")
+            //   for (f in fixed) {
+            val matched = mutableListOf<Scanner>()
+            for (o in open) {
+                val r = cache.getOrPut(o.n) { overlap(beaconsTotal, o) }
+                if (r != null) {
+                    println("Scanner ${o.n} found relative to 0 at ${r.second}!")
+                    val fixedScanner = r.first
+                    matched += o
+                    fixed += fixedScanner
+                    beaconsTotal += fixedScanner.beacons
+                }
+            }
+            open -= matched.toSet()
+            if (matched.isEmpty()) error("no matches")
+            //if (matched.isNotEmpty()) break
+            //    }
+        }
+
+        println("Matched ${fixed.size} scanners")
+        fixed
     }
 }
 
