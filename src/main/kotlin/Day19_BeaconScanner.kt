@@ -6,8 +6,10 @@ class Day19 : Day(19, 2021, "Beacon Scanner") {
     val sc: List<Scanner> = inputChunks.mapIndexed { n, l ->
         Scanner(n, l.drop(1).map {
             it.extractAllIntegers().let { (x, y, z) -> Point3D(x, y, z) }
-        })
+        }.toSet())
     }.show()
+
+    fun <T> Sequence<T>.hasAtLeast(n: Int): Boolean = take(n).count() == n
 
     fun overlap(a: Collection<Point3D>, b: Scanner): Triple<Scanner, Orientation, Point3D>? {
         //println("Scanner ${a.n} to ${b.n}...")
@@ -17,11 +19,9 @@ class Day19 : Day(19, 2021, "Beacon Scanner") {
                 for (b1 in bx.beacons) {
                     val offset = a1 - b1
                     val bxShifted = bx.changeOffset(offset)
-                    val count = a.asSequence().filter { it in bxShifted.beacons }.take(12).count()
-                    //val count = a.beacons.count { it in bxShifted.beacons }
-                    if (count >= 12) {
-                        println("Found relevant offset of $offset with $count beacons")
-
+                    val overlap = a.asSequence().filter { it in bxShifted.beacons }.hasAtLeast(12)
+                    if (overlap) {
+                        //println("Found relevant offset of $offset")
                         return Triple(bxShifted, orientation, offset * -1)
                     }
                 }
@@ -106,31 +106,23 @@ class Day19 : Day(19, 2021, "Beacon Scanner") {
         return allScanners.flatMapTo(mutableSetOf()) { it.beacons }.size
     }
 
-    override fun part2(): Any {
-        val distances = allScanners.toList().combinations(2).map { (asc, bsc) ->
-            val a = asc.pos
-            val b = bsc.pos
-            (a.x - b.x).absoluteValue + (a.y - b.y).absoluteValue + (a.z - b.z).absoluteValue
-        }
+    override fun part2() =
+        allScanners.combinations(2).map { (a, b) ->
+            a.pos manhattanDistanceTo b.pos
+        }.maxOrNull()!!
 
-        return distances.maxOrNull()!!
-    }
-
-    val allScanners: List<Scanner> by lazy {
+    private val allScanners: List<Scanner> by lazy {
         val fixed = sc.take(1).toMutableList()
         val open = sc.drop(1).toMutableList()
 
-        val cache = mutableMapOf<Int, Triple<Scanner, Orientation, Point3D>?>()
-
         val beaconsTotal = fixed.single().beacons.toMutableSet()
         while (open.isNotEmpty()) {
-            println("Fixed: ${fixed.size} with ${beaconsTotal.size} beacons - open ${open.size} - cached ${cache.size}")
+            println("Fixed: ${fixed.size} with ${beaconsTotal.size} beacons - open ${open.size}")
             //   for (f in fixed) {
             val matched = mutableListOf<Scanner>()
             for (o in open) {
-                val r = cache.getOrPut(o.n) { overlap(beaconsTotal, o) }
-                if (r != null) {
-                    println("Scanner ${o.n} found relative to 0 at ${r.second}!")
+                overlap(beaconsTotal, o)?.let { r ->
+                    println("Scanner ${o.n} found relative to 0 at ${r.second} with offset ${r.third}!")
                     val fixedScanner = r.first
                     matched += o
                     fixed += fixedScanner
@@ -148,9 +140,9 @@ class Day19 : Day(19, 2021, "Beacon Scanner") {
     }
 }
 
-data class Orientation(val rotX: Int, val rotY: Int, val rotZ: Int, val flip: Boolean = false) {
+data class Orientation(val rotX: Int, val rotY: Int, val rotZ: Int) {
     companion object {
-        val default = Orientation(0, 0, 0, false)
+        val default = Orientation(0, 0, 0)
         val all: List<Orientation> =
             (0..3).flatMap { rot ->
                 (0..5).map { facing ->
@@ -171,24 +163,27 @@ data class Orientation(val rotX: Int, val rotY: Int, val rotZ: Int, val flip: Bo
 operator fun Orientation.plus(other: Orientation) =
     Orientation((rotX + other.rotX) % 4,
         (rotY + other.rotY) % 4,
-        (rotZ + other.rotZ) % 4,
-        if (other.flip) !flip else flip)
+        (rotZ + other.rotZ) % 4)
 
 operator fun Orientation.minus(other: Orientation) =
     Orientation((rotX - other.rotX).mod(4),
         (rotY - other.rotY).mod(4),
-        (rotZ - other.rotZ).mod(4),
-        if (other.flip) !flip else flip)
+        (rotZ - other.rotZ).mod(4))
+
+val origin3D = Point3D(0, 0, 0)
 
 data class Scanner(
     val n: Int,
-    private val originalBeacons: BeaconList,
-    val pos: Point3D = Point3D(0, 0, 0),
+    private val originalBeacons: Set<Point3D>,
+    val pos: Point3D = origin3D,
     val orientation: Orientation = Orientation.default,
-    private val beaconCache: MutableMap<Orientation, BeaconList> = mutableMapOf(),
+    private val beaconCache: MutableMap<Orientation, Collection<Point3D>> = mutableMapOf(Orientation.default to originalBeacons),
 ) {
     val beacons: Set<Point3D> by lazy {
-        beaconCache.getOrPut(orientation) { calcRotation(orientation) }.mapTo(mutableSetOf()) { it + pos }
+        if (orientation == Orientation.default && pos == origin3D)
+            originalBeacons
+        else
+            beaconCache.getOrPut(orientation) { calcRotation(orientation) }.mapTo(mutableSetOf()) { it + pos }
     }
 
     fun changeOrientation(newOrientation: Orientation): Scanner =
@@ -198,13 +193,7 @@ data class Scanner(
         copy(pos = pos + offset)
 
     private fun calcRotation(orientation: Orientation): List<Point3D> = with(orientation) {
-        originalBeacons.map { p ->
-            var r = p
-            r = rotXM[rotX] * r
-            r = rotYM[rotY] * r
-            r = rotZM[rotZ] * r
-            r * if (flip) -1 else 1
-        }
+        originalBeacons.map { rotZM[rotZ] * (rotYM[rotY] * (rotXM[rotX] * it)) }
     }
 
     override fun toString() = "Scanner $n, $orientation, $pos"
@@ -250,6 +239,11 @@ operator fun Point3D.plus(other: Point3D) =
 
 operator fun Point3D.minus(other: Point3D) =
     Point3D(x - other.x, y - other.y, z - other.z)
+
+infix fun Point3D.manhattanDistanceTo(other: Point3D) =
+    (x - other.x).absoluteValue + (y - other.y).absoluteValue + (z - other.z).absoluteValue
+
+fun Point3D.toList() = listOf(x, y, z)
 
 fun main() {
     solve<Day19>(EXAMPLE, 79, 3621)
