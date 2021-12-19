@@ -24,6 +24,7 @@ class DaysTest {
         test<Day16>(938, 1495959086337)
         test<Day17>(11175, 3540)
         test<Day18>(4176, 4633)
+        test<Day19>(419, 13210)
     }
 
     companion object {
