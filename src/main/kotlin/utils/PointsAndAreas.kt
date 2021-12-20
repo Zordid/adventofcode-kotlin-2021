@@ -8,11 +8,8 @@ import kotlin.math.sign
 typealias Point = Pair<Int, Int>
 typealias Area = Pair<Point, Point>
 
-val Point.x: Int
-    get() = first
-
-val Point.y: Int
-    get() = second
+val Point.x: Int get() = first
+val Point.y: Int get() = second
 
 val Point.manhattanDistance: Int
     get() = x.absoluteValue + y.absoluteValue

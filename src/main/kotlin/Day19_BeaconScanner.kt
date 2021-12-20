@@ -1,143 +1,50 @@
 import utils.combinations
+import utils.dim3d.*
 import kotlin.math.absoluteValue
 
 class Day19 : Day(19, 2021, "Beacon Scanner") {
 
-    val sc: List<Scanner> = inputChunks.mapIndexed { n, l ->
+    private val rawScanners: List<Scanner> = inputChunks.mapIndexed { n, l ->
         Scanner(n, l.drop(1).map {
             it.extractAllIntegers().let { (x, y, z) -> Point3D(x, y, z) }
         }.toSet())
     }.show()
 
-    fun <T> Sequence<T>.hasAtLeast(n: Int): Boolean = take(n).count() == n
+    private val arrangedScanners: List<Scanner> by lazy { locateAllScanners() }
 
-    fun overlap(a: Collection<Point3D>, b: Scanner): Triple<Scanner, Orientation, Point3D>? {
-        //println("Scanner ${a.n} to ${b.n}...")
-        for (orientation in Orientation.all) {
-            val bx = b.changeOrientation(orientation)
-            for (a1 in a) {
-                for (b1 in bx.beacons) {
-                    val offset = a1 - b1
-                    val bxShifted = bx.changeOffset(offset)
-                    val overlap = a.asSequence().filter { it in bxShifted.beacons }.hasAtLeast(12)
-                    if (overlap) {
-                        //println("Found relevant offset of $offset")
-                        return Triple(bxShifted, orientation, offset * -1)
-                    }
-                }
-
-            }
-        }
-//        outer@ for (a1 in a.beacons) {
-//            for (bx in b.allRotations) {
-//                for (b1 in bx.originalBeacons) {
-//                    val offset = b1 - a1
-//
-//                    val offsetB = bx.originalBeacons.map {
-//                        it - offset
-//                    }
-//
-//                    //val count = a.beacons.asSequence().map { it in offsetB }.filter{ it }.take(12).count()
-//                    val count = a.beacons.count { it in offsetB }
-//                    if (count >= 12) {
-//                        println("Found relevant offset of $offset with $count beacons")
-//
-//                        return Triple(bx, offset * -1, count)
-//                    }
-//                }
-//            }
-//        }
-        return null
-    }
-
-    override fun part1(): Any {
-//        val combinations = sc.combinations(2).toList()
-//        val cluster = mutableListOf<List<Scanner>>()
-//        println("Checking ${combinations.size} combinations...")
-//        val t = measureTimeMillis {
-//            var c = 0
-//            combinations.forEach { (a, b) ->
-//                val overlap = overlap(a, b)
-//                if (overlap != null) {
-//                    println("${a.n} overlaps with ${b.n}")
-//                    cluster += listOf(a, overlap.first)
-//                }
-//                c++
-//                println("$c of ${combinations.size}")
-//            }
-//        }
-//        println("Done in $t ms.")
-//        println("Combining ${cluster.size} clusters.")
-//
-//        while (cluster.size > 1) {
-//            val (c, c1, c2) = cluster.combinations(2).mapNotNull { (c1, c2) ->
-//                val intersecting = c1.map { it.n } intersect c2.map { it.n }.toSet()
-//                if (intersecting.isNotEmpty())
-//                    Triple(intersecting.first(), c1, c2)
-//                else null
-//            }.firstOrNull() ?: error("No more intersections found")
-//
-//            println("Combining $c1 with $c2")
-//            val sc1 = c1.first { it.n == c }
-//            val sc2 = c2.first { it.n == c }
-//
-//            println(sc1)
-//            println(sc2)
-//
-//            val or = sc2.orientation - sc1.orientation
-//            val offset = sc2.pos - sc1.pos
-//
-//            println("$or - $offset")
-//            val newCluster = c1 + c2.filter { it.n !in c1.map { it.n } }.map { it.changeOrientation(or).changeOffset(offset) }
-//
-//            println(newCluster)
-//
-//            cluster -= c1
-//            cluster -= c2
-//            cluster += newCluster
-//        }
-//        val result = cluster.single()
-//        println("Resulting cluster has ${result.map { it.n }}")
-//
-//        allScanners = result
-//        return result.flatMap { it.beacons }.toSet().size
-
-
-        return allScanners.flatMapTo(mutableSetOf()) { it.beacons }.size
-    }
+    override fun part1() =
+        arrangedScanners.flatMapTo(mutableSetOf()) { it.beacons }.size
 
     override fun part2() =
-        allScanners.combinations(2).map { (a, b) ->
+        arrangedScanners.combinations(2).map { (a, b) ->
             a.pos manhattanDistanceTo b.pos
         }.maxOrNull()!!
 
-    private val allScanners: List<Scanner> by lazy {
-        val fixed = sc.take(1).toMutableList()
-        val open = sc.drop(1).toMutableList()
+    private fun locateAllScanners(): List<Scanner> {
+        val origin = rawScanners.first()
+        val open = rawScanners.drop(1).toMutableSet()
 
-        val beaconsTotal = fixed.single().beacons.toMutableSet()
-        while (open.isNotEmpty()) {
-            println("Fixed: ${fixed.size} with ${beaconsTotal.size} beacons - open ${open.size}")
-            //   for (f in fixed) {
-            val matched = mutableListOf<Scanner>()
-            for (o in open) {
-                overlap(beaconsTotal, o)?.let { r ->
-                    println("Scanner ${o.n} found relative to 0 at ${r.second} with offset ${r.third}!")
-                    val fixedScanner = r.first
-                    matched += o
-                    fixed += fixedScanner
-                    beaconsTotal += fixedScanner.beacons
-                }
+        fun Scanner.attachAllOverlapping(
+            open: MutableSet<Scanner>,
+            result: MutableList<Scanner> = mutableListOf(this),
+        ): List<Scanner> {
+            var next = open.firstNotNullOfOrNull { it.locateToReference(this) }
+            while (next != null) {
+                open -= next
+                result += next
+                next.attachAllOverlapping(open, result)
+                next = open.firstNotNullOfOrNull { it.locateToReference(this) }
             }
-            open -= matched.toSet()
-            if (matched.isEmpty()) error("no matches")
-            //if (matched.isNotEmpty()) break
-            //    }
+            return result
         }
 
-        println("Matched ${fixed.size} scanners")
-        fixed
+        return origin.attachAllOverlapping(open)
     }
+
+}
+
+fun main() {
+    solve<Day19>(EXAMPLE, 79, 3621)
 }
 
 data class Orientation(val rotX: Int, val rotY: Int, val rotZ: Int) {
@@ -172,6 +79,27 @@ operator fun Orientation.minus(other: Orientation) =
 
 val origin3D = Point3D(0, 0, 0)
 
+fun Scanner.locateToReference(reference: Scanner): Scanner? {
+    val other = this
+    val commonFeatures = reference.features.keys intersect other.features.keys
+    val commonFeatureCounts = commonFeatures.sumOf { minOf(reference.features[it]!!, other.features[it]!!) }
+    if (commonFeatureCounts >= 66)
+        for (orientation in Orientation.all) {
+            val turned = other.addOrientation(orientation)
+            for (pA in reference.beacons) {
+                for (pB in turned.beacons) {
+                    val offset = pA - pB
+                    val turnedAndShifted = turned.withPosition(offset)
+                    val overlap =
+                        reference.beacons.asSequence().filter { it in turnedAndShifted.beacons }.hasAtLeast(12)
+                    if (overlap)
+                        return turnedAndShifted
+                }
+            }
+        }
+    return null
+}
+
 data class Scanner(
     val n: Int,
     private val originalBeacons: Set<Point3D>,
@@ -186,11 +114,15 @@ data class Scanner(
             beaconCache.getOrPut(orientation) { calcRotation(orientation) }.mapTo(mutableSetOf()) { it + pos }
     }
 
-    fun changeOrientation(newOrientation: Orientation): Scanner =
+    val features: Map<Point3D, Int> = originalBeacons.combinations(2).map { (a, b) ->
+        listOf((a.x - b.x).absoluteValue, (a.y - b.y).absoluteValue, (a.z - b.z).absoluteValue).sorted()
+            .let { (u, v, w) -> Triple(u, v, w) }
+    }.groupingBy { it }.eachCount()
+
+    fun addOrientation(newOrientation: Orientation): Scanner =
         copy(orientation = orientation + newOrientation)
 
-    fun changeOffset(offset: Point3D) =
-        copy(pos = pos + offset)
+    fun withPosition(pos: Point3D) = copy(pos = pos)
 
     private fun calcRotation(orientation: Orientation): List<Point3D> = with(orientation) {
         originalBeacons.map { rotZM[rotZ] * (rotYM[rotY] * (rotXM[rotX] * it)) }
@@ -214,53 +146,10 @@ data class Scanner(
     }
 }
 
-typealias BeaconList = List<Point3D>
-
-typealias Point3D = Triple<Int, Int, Int>
-
-val Point3D.x: Int get() = first
-val Point3D.y: Int get() = second
-val Point3D.z: Int get() = third
-
-typealias Matrix3D = List<Point3D>
-
-operator fun Matrix3D.times(p: Point3D): Point3D =
-    Point3D(
-        p.x * this[0].x + p.y * this[0].y + p.z * this[0].z,
-        p.x * this[1].x + p.y * this[1].y + p.z * this[1].z,
-        p.x * this[2].x + p.y * this[2].y + p.z * this[2].z,
-    )
-
-operator fun Point3D.times(n: Int) =
-    Point3D(x * n, y * n, z * n)
-
-operator fun Point3D.plus(other: Point3D) =
-    Point3D(x + other.x, y + other.y, z + other.z)
-
-operator fun Point3D.minus(other: Point3D) =
-    Point3D(x - other.x, y - other.y, z - other.z)
-
-infix fun Point3D.manhattanDistanceTo(other: Point3D) =
-    (x - other.x).absoluteValue + (y - other.y).absoluteValue + (z - other.z).absoluteValue
-
-fun Point3D.toList() = listOf(x, y, z)
-
-fun main() {
-    solve<Day19>(EXAMPLE, 79, 3621)
-}
-
-const val SMALL = """
---- scanner 0 ---
--1,-1,1
--2,-2,2
--3,-3,3
--2,-3,1
-5,6,-4
-8,0,7
-"""
+private fun <T> Sequence<T>.hasAtLeast(n: Int): Boolean = take(n).count() == n
 
 const val EXAMPLE = """
-    --- scanner 0 ---
+--- scanner 0 ---
 404,-588,-901
 528,-643,409
 -838,591,734
@@ -397,83 +286,3 @@ const val EXAMPLE = """
 -652,-548,-490
 30,-46,-14
 """
-
-
-const val cos0 = 1
-const val cos90 = 0
-const val cos180 = -1
-const val cos270 = 0
-const val sin0 = 0
-const val sin90 = 1
-const val sin180 = 0
-const val sin270 = -1
-
-
-val rotXM: List<Matrix3D> = listOf(
-    listOf(
-        Point3D(1, 0, 0),
-        Point3D(0, 1, 0),
-        Point3D(0, 0, 1),
-    ),
-    listOf(
-        Point3D(1, 0, 0),
-        Point3D(0, cos90, -sin90),
-        Point3D(0, sin90, cos90),
-    ),
-    listOf(
-        Point3D(1, 0, 0),
-        Point3D(0, cos180, -sin180),
-        Point3D(0, sin180, cos180),
-    ),
-    listOf(
-        Point3D(1, 0, 0),
-        Point3D(0, cos270, -sin270),
-        Point3D(0, sin270, cos270),
-    ),
-)
-
-val rotYM: List<Matrix3D> = listOf(
-    listOf(
-        Point3D(cos0, 0, sin0),
-        Point3D(0, 1, 0),
-        Point3D(-sin0, 0, cos0),
-    ),
-    listOf(
-        Point3D(cos90, 0, sin90),
-        Point3D(0, 1, 0),
-        Point3D(-sin90, 0, cos90),
-    ),
-    listOf(
-        Point3D(cos180, 0, sin180),
-        Point3D(0, 1, 0),
-        Point3D(-sin180, 0, cos180),
-    ),
-    listOf(
-        Point3D(cos270, 0, sin270),
-        Point3D(0, 1, 0),
-        Point3D(-sin270, 0, cos270),
-    ),
-)
-
-val rotZM: List<Matrix3D> = listOf(
-    listOf(
-        Point3D(cos0, -sin0, 0),
-        Point3D(sin0, cos0, 0),
-        Point3D(0, 0, 1),
-    ),
-    listOf(
-        Point3D(cos90, -sin90, 0),
-        Point3D(sin90, cos90, 0),
-        Point3D(0, 0, 1),
-    ),
-    listOf(
-        Point3D(cos180, -sin180, 0),
-        Point3D(sin180, cos180, 0),
-        Point3D(0, 0, 1),
-    ),
-    listOf(
-        Point3D(cos270, -sin270, 0),
-        Point3D(sin270, cos270, 0),
-        Point3D(0, 0, 1),
-    ),
-)

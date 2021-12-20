@@ -3,6 +3,16 @@ package utils
 /**
  * Generates all combinations of the elements of the given list for the requested size.
  * Note: combinations do not include all their permutations!
+ * @receiver the collection to take elements from
+ * @param size the size of the combinations to create
+ * @return a sequence of all combinations
+ */
+fun <T> Collection<T>.combinations(size: Int): Sequence<List<T>> =
+    toList().combinations(size)
+
+/**
+ * Generates all combinations of the elements of the given list for the requested size.
+ * Note: combinations do not include all their permutations!
  * @receiver the list to take elements from
  * @param size the size of the combinations to create
  * @return a sequence of all combinations
@@ -25,13 +35,13 @@ fun <T> List<T>.combinations(size: Int): Sequence<List<T>> =
  * @receiver the list of elements for permutation of order
  * @return a sequence of all permutations of the given list
  */
-fun <T> List<T>.permutations(): Sequence<List<T>> =
+fun <T> Collection<T>.permutations(): Sequence<List<T>> =
     when (size) {
         0 -> emptySequence()
         1 -> sequenceOf(toList())
         else -> {
             val head = first()
-            val tail = subList(1, size)
+            val tail = drop(1)
             tail.permutations().flatMap { perm ->
                 (0..perm.size).asSequence().map { perm.copyAndInsert(it, head) }
             }
