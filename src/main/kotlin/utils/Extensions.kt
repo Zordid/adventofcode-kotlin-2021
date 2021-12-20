@@ -79,6 +79,9 @@ inline fun <T> Grid<T>.forArea(f: (p: Point) -> Unit) {
             f(x to y)
 }
 
+fun <T> Grid<T>.toMapGrid(sparseElement: T? = null): Map<Point, T> =
+    buildMap { forArea { p, v -> if (v != sparseElement) this[p] = v } }
+
 fun <T, R> Grid<T>.mapValues(transform: (T) -> R): Grid<R> =
     map { it.map(transform) }
 
