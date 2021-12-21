@@ -37,25 +37,25 @@ class Day21 : Day(21, 2021, "Dirac Dice") {
         val universeStatistics = c.groupingBy { it.sum() }.eachCount()
         val wins = LongArray(2)
 
-        fun game(player: Int, universes: Long, positions: IntArray, scores: IntArray = IntArray(2)) {
-            val pos = positions[player]
-            val score = scores[player]
+        fun game(positions: IntArray, nextPlayer: Int = 0, scores: IntArray = IntArray(2), universes: Long = 1L) {
+            val pos = positions[nextPlayer]
+            val score = scores[nextPlayer]
             for ((diceTotal, numberOfUniverses) in universeStatistics) {
                 val newPos = (pos + diceTotal - 1) % 10 + 1
                 val newScore = score + newPos
                 if (newScore >= 21)
-                    wins[player] += universes * numberOfUniverses
+                    wins[nextPlayer] += universes * numberOfUniverses
                 else {
-                    positions[player] = newPos
-                    scores[player] = newScore
-                    game((player + 1) % 2, universes * numberOfUniverses, positions, scores)
+                    positions[nextPlayer] = newPos
+                    scores[nextPlayer] = newScore
+                    game(positions, (nextPlayer + 1) % 2, scores, universes * numberOfUniverses)
                 }
             }
-            positions[player] = pos
-            scores[player] = score
+            positions[nextPlayer] = pos
+            scores[nextPlayer] = score
         }
 
-        game(0, 1, start.toIntArray())
+        game(start.toIntArray())
 
         return wins.maxOrNull()!!
     }

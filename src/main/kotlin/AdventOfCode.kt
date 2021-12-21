@@ -47,6 +47,30 @@ var globalTestData: String? = null
 inline fun <reified T : Day> create(): T =
     T::class.constructors.first { it.parameters.isEmpty() }.call()
 
+data class TestData(val input: String, val expectedPart1: Any?, val expectedPart2: Any?)
+
+inline fun <reified T : Day> test(testData: TestData) = with(testData) {
+    globalTestData = input
+    with(create<T>()) {
+        if (expectedPart1 != null) {
+            println("Checking part 1... ")
+            part1().let { result ->
+                check(result.toString() == expectedPart1.toString()) {
+                    "Part 1 result failed!\nExpected: $expectedPart1\nActual: $result"
+                }
+            }
+        }
+        if (expectedPart2 != null) {
+            println("Checking part 2... ")
+            part2().let { result ->
+                check(result.toString() == expectedPart2.toString()) {
+                    "Part 2 result failed!\nExpected: $expectedPart2\nActual: $result"
+                }
+            }
+        }
+    }
+}
+
 inline fun <reified T : Day> solve(
     testData: String? = null,
     expectedPart1: Any? = null,
@@ -54,25 +78,7 @@ inline fun <reified T : Day> solve(
     onlyTest: Boolean = false,
 ) {
     if (testData != null && (expectedPart1 != null || expectedPart2 != null)) {
-        globalTestData = testData
-        with(create<T>()) {
-            if (expectedPart1 != null) {
-                println("Checking part 1... ")
-                part1().let { result ->
-                    check(result.toString() == expectedPart1.toString()) {
-                        "Part 1 result failed!\nExpected: $expectedPart1\nActual: $result"
-                    }
-                }
-            }
-            if (expectedPart2 != null) {
-                println("Checking part 2... ")
-                part2().let { result ->
-                    check(result.toString() == expectedPart2.toString()) {
-                        "Part 2 result failed!\nExpected: $expectedPart2\nActual: $result"
-                    }
-                }
-            }
-        }
+        test<T>(TestData(testData, expectedPart1, expectedPart2))
     }
     if (!onlyTest)
         create<T>().solve()
