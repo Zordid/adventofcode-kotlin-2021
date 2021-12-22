@@ -1,21 +1,17 @@
 import utils.dim3d.Point3D
-import java.math.BigInteger
-import kotlin.system.exitProcess
 
-class Day22 : Day(22, 2021) {
+class Day22 : Day(22, 2021, "Reactor Reboot") {
 
-    val p = mappedInput {
-        Region(it.startsWith("on"),
-            it.extractAllIntegers().chunked(2).map { (f, t) ->
-                f..t
-            })
+    private val steps = mappedInput {
+        Region(
+            it.startsWith("on"),
+            it.extractAllIntegers().chunked(2).map { (a, b) -> a..b }
+        )
     }
 
-    override fun part1(): Any {
-        val state = mutableSetOf<Point3D>()
-
-        p.forEach { r ->
-            with(r) {
+    override fun part1() =
+        steps.fold(mutableSetOf<Point3D>()) { state, step ->
+            with(step) {
                 val xrl = xr.first.coerceAtLeast(-50)..xr.last.coerceAtMost(50)
                 val yrl = yr.first.coerceAtLeast(-50)..yr.last.coerceAtMost(50)
                 val zrl = zr.first.coerceAtLeast(-50)..zr.last.coerceAtMost(50)
@@ -29,10 +25,8 @@ class Day22 : Day(22, 2021) {
                                 state -= Point3D(x, y, z)
                         }
             }
-        }
-
-        return state.size
-    }
+            state
+        }.size
 
     interface Reg {
         val xr: IntRange
@@ -56,38 +50,11 @@ class Day22 : Day(22, 2021) {
         override val xr: IntRange get() = r[0]
         override val yr: IntRange get() = r[1]
         override val zr: IntRange get() = r[2]
-        val off: Boolean get() = !on
 
-        init {
-            require(contained.all { it.on == !on })
-        }
-
-        fun Iterable<BigInteger>.sum() = fold(BigInteger.ZERO) { acc, i -> acc + i }
-
-        fun countOn(): BigInteger {
-            return if (on) {
-                volume.toBigInteger() - contained.map { it.countOn() }.sum()
-            } else {
-                contained.map { it.countOn() }.sum()
-            }
-        }
-
-        override fun equals(other: Any?): Boolean {
-            if (this === other) return true
-            if (javaClass != other?.javaClass) return false
-
-            other as Region
-
-            if (on != other.on) return false
-            if (r != other.r) return false
-
-            return true
-        }
-
-        override fun hashCode(): Int {
-            var result = on.hashCode()
-            result = 31 * result + r.hashCode()
-            return result
+        fun countOn(): Long = if (on) {
+            volume - contained.sumOf { it.countOn() }
+        } else {
+            contained.sumOf { it.countOn() }
         }
     }
 
@@ -137,7 +104,7 @@ class Day22 : Day(22, 2021) {
         ))
     }
 
-    val maxRange = (Int.MIN_VALUE + 10)..(Int.MAX_VALUE - 10)
+    val maxRange = Int.MIN_VALUE..Int.MAX_VALUE
 
     operator fun Reg.minus(other: Reg): List<Reg> = listOf<Reg>(
         R(listOf(this.xr, this.yr, this.zr.first..other.zr.first - 1)),
@@ -150,102 +117,38 @@ class Day22 : Day(22, 2021) {
         it.volume != 0L
     }
 
-    infix fun Region.reduceBy(subtract: Reg): List<Region> {
-        return (this - subtract).map {
-            Region(on, it.toList(), contained = contained.mapNotNull { c ->
-                if (c disjunct subtract)
-                    listOf(c)
-                else if (c in subtract)
-                    null
-                else {
-                    c reduceBy subtract
+    infix fun Region.reduceBy(toSubtract: Reg): List<Region> =
+        (this - toSubtract).map {
+            Region(on, it.toList(), contained = contained.mapNotNull { sub ->
+                when {
+                    sub in toSubtract -> null
+                    sub disjunct toSubtract -> listOf(sub)
+                    else -> sub reduceBy toSubtract
                 }
             }.flatten())
         }
-    }
 
-    infix fun Region.combineWith(other: Region): Region {
-        //println("Combining $this with $other")
-        require(this in other)
-        require(other.contained.isEmpty())
-        when {
-            on != other.on -> { // switch
-                // off region, want to switch on
-                if (contained.all { it in other }) // all former ons are within the new on
-                    return copy(contained = listOf(other))
-                if (contained.all { it disjunct other }) { // all former ons are completely disjunct to the new on
-                    return copy(contained = contained + listOf(other))
-                }
-                println("must merge $other...")
-                // there are overlaps to switch!
-                return copy(contained = listOf(other) + contained.flatMap { subOn ->
-                    println(subOn)
-                    if (subOn disjunct other)
-                        listOf(subOn).also { println("is disjunct") }
-                    else {
-                        val overlap = subOn overlap other
-                        println("overlap region is $overlap")
-                        (subOn reduceBy overlap)
-                    }
+    infix fun Region.combineWith(other: Region): Region = when {
+        on != other.on ->  // off region, want to switch on
+            when {
+                // all former ons are within the new on
+                contained.all { it in other } -> copy(contained = listOf(other))
+                else -> copy(contained = listOf(other) + contained.flatMap { subOn ->
+                    if (subOn disjunct other) listOf(subOn)
+                    else subOn reduceBy (subOn overlap other)
                 })
             }
-            on == other.on -> {
-                // in off Region, want to switch off
-                if (contained.all { c -> c disjunct other }) {
-                    return this
-                }
-                return copy(contained = contained.flatMap { subOn ->
-                    if (subOn disjunct other)
-                        listOf(subOn)
-                    else {
-                        val overlap = subOn overlap other
-                        (subOn reduceBy overlap) //Region(!on, overlap.toList())
-                    }
-                })
-            }
-        }
-        error("")
+        else ->  // in off Region, want to switch off
+            copy(contained = contained.flatMap { subOn ->
+                if (subOn disjunct other) listOf(subOn)
+                else subOn reduceBy (subOn overlap other)
+            })
     }
 
     override fun part2(): Any {
-//
-//        val r1 = R(listOf(0..2, 0..2, 0..2))
-//        val r2 = R(listOf(-1000..1000, 1..1, 1..1))
-//
-//        (r1 - r2).forEach(::println)
-//
-//        println(r1.volume)
-//        println(r2.volume)
-//        println((r1 - r2).sumOf(Reg::volume))
-//
-//
-//        exitProcess(0)
-
-        val state = Region(false, listOf(maxRange, maxRange, maxRange))
-
-        val r = p.fold(state) { acc, step ->
-            println("---")
-            println("${step.on}: ${step.xr}/${step.yr}/${step.zr} ${step.volume}")
-            (acc combineWith step).also { newAcc ->
-                val before = acc.countOn()
-                val now = newAcc.countOn()
-
-                val v = (if (step.on) +1 else -1) * step.volume
-                val op = (if (step.on) "+" else "-")
-                val check = before + v.toBigInteger()
-                println("$before $op $v")
-                println("Must not exceed = $check")
-                println("Is              = ${newAcc.countOn()} + ${newAcc.contained.size}")
-                println()
-                newAcc.contained.forEach { println(it);println(it.countOn()) }
-                if ((step.on && now > check) || (step.off && now < check)) {
-                    println("FAILURE!")
-                    exitProcess(-1)
-                }
-            }
-        }
-
-        return r.countOn()
+        val startState = Region(false, listOf(maxRange, maxRange, maxRange))
+        val endState = steps.fold(startState) { acc, step -> acc combineWith step }
+        return endState.countOn()
     }
 
 }
