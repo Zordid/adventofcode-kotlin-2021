@@ -5,7 +5,7 @@ class Day22 : Day(22, 2021, "Reactor Reboot") {
     private val steps = mappedInput {
         Region(
             it.startsWith("on"),
-            it.extractAllIntegers().chunked(2).map { (a, b) -> a..b }
+            Cube.fromList(it.extractAllIntegers().chunked(2).map { (a, b) -> a..b })
         )
     }
 
@@ -28,53 +28,58 @@ class Day22 : Day(22, 2021, "Reactor Reboot") {
             state
         }.size
 
-    interface Reg {
+    interface Cube {
         val xr: IntRange
         val yr: IntRange
         val zr: IntRange
         val volume: Long
-            get() = if (xr.isEmpty() || yr.isEmpty() || zr.isEmpty()) 0L else
-                (xr.last - xr.first + 1L) *
-                        (yr.last - yr.first + 1L) *
-                        (zr.last - zr.first + 1L)
+            get() = (xr.last - xr.first + 1L).coerceAtLeast(0) *
+                    (yr.last - yr.first + 1L).coerceAtLeast(0) *
+                    (zr.last - zr.first + 1L).coerceAtLeast(0)
 
         fun toList() = listOf(xr, yr, zr)
+
+        private class RangeCube(
+            override val xr: IntRange,
+            override val yr: IntRange,
+            override val zr: IntRange,
+        ) : Cube
+
+        private class ListCube(val r: List<IntRange>) : Cube {
+            override val xr: IntRange get() = r[0]
+            override val yr: IntRange get() = r[1]
+            override val zr: IntRange get() = r[2]
+        }
+
+        companion object {
+            fun from(xr: IntRange, yr: IntRange, zr: IntRange): Cube = RangeCube(xr, yr, zr)
+            fun fromList(l: List<IntRange>): Cube = ListCube(l)
+        }
     }
 
     data class Region(
         val on: Boolean,
-        private val r: List<IntRange>,
+        private val cube: Cube,
         val contained: List<Region> = emptyList(),
-    ) : Reg,
-        List<IntRange> by r {
-        override val xr: IntRange get() = r[0]
-        override val yr: IntRange get() = r[1]
-        override val zr: IntRange get() = r[2]
-
-        fun countOn(): Long = if (on) {
-            volume - contained.sumOf { it.countOn() }
+    ) : Cube by cube {
+        fun countOnStates(): Long = if (on) {
+            volume - contained.sumOf { it.countOnStates() }
         } else {
-            contained.sumOf { it.countOn() }
+            contained.sumOf { it.countOnStates() }
         }
     }
 
-    operator fun Reg.contains(other: Reg): Boolean =
+    operator fun Cube.contains(other: Cube): Boolean =
         this.xr.first >= other.xr.first && this.xr.last <= other.xr.last &&
                 this.yr.first >= other.yr.first && this.yr.last <= other.yr.last &&
                 this.zr.first >= other.zr.first && this.zr.last <= other.zr.last
 
-    infix fun Reg.disjunct(other: Reg): Boolean =
+    infix fun Cube.disjunct(other: Cube): Boolean =
         (this.xr.last < other.xr.first || other.xr.last < this.xr.first) ||
                 (this.yr.last < other.yr.first || other.yr.last < this.yr.first) ||
                 (this.zr.last < other.zr.first || other.zr.last < this.zr.first)
 
-    data class R(val r: List<IntRange>) : Reg, List<IntRange> by r {
-        override val xr: IntRange get() = r[0]
-        override val yr: IntRange get() = r[1]
-        override val zr: IntRange get() = r[2]
-    }
-
-    infix fun Reg.overlap(other: Reg): Reg {
+    infix fun Cube.overlap(other: Cube): Cube {
         val xr =
             when {
                 this.xr.first >= other.xr.first && this.xr.last <= other.xr.last -> this.xr
@@ -93,33 +98,33 @@ class Day22 : Day(22, 2021, "Reactor Reboot") {
                 other.zr.first >= this.zr.first && other.zr.last <= this.zr.last -> other.zr
                 else -> maxOf(this.zr.first, other.zr.first)..minOf(this.zr.last, other.zr.last)
             }
-        return R(listOf(xr, yr, zr))
+        return Cube.from(xr, yr, zr)
     }
 
-    infix fun Reg.combinedRegion(other: Reg): Reg {
-        return R(listOf(
+    infix fun Cube.combinedRegion(other: Cube): Cube {
+        return Cube.from(
             minOf(this.xr.first, other.xr.first)..maxOf(this.xr.last, other.xr.last),
             minOf(this.yr.first, other.yr.first)..maxOf(this.yr.last, other.yr.last),
             minOf(this.zr.first, other.zr.first)..maxOf(this.zr.last, other.zr.last)
-        ))
+        )
     }
 
     val maxRange = Int.MIN_VALUE..Int.MAX_VALUE
 
-    operator fun Reg.minus(other: Reg): List<Reg> = listOf<Reg>(
-        R(listOf(this.xr, this.yr, this.zr.first..other.zr.first - 1)),
-        R(listOf(this.xr, this.yr, other.zr.last + 1..this.zr.last)),
-        R(listOf(this.xr, this.yr.first..other.yr.first - 1, other.zr)), // 1
-        R(listOf(this.xr, other.yr.last + 1..this.yr.last, other.zr)), // 2
-        R(listOf(this.xr.first..other.xr.first - 1, other.yr, other.zr)), // 3
-        R(listOf(other.xr.last + 1..this.xr.last, other.yr, other.zr)), // 4
+    operator fun Cube.minus(other: Cube): List<Cube> = listOf(
+        Cube.from(this.xr, this.yr, this.zr.first until other.zr.first),
+        Cube.from(this.xr, this.yr, other.zr.last + 1..this.zr.last),
+        Cube.from(this.xr, this.yr.first until other.yr.first, other.zr),
+        Cube.from(this.xr, other.yr.last + 1..this.yr.last, other.zr),
+        Cube.from(this.xr.first until other.xr.first, other.yr, other.zr),
+        Cube.from(other.xr.last + 1..this.xr.last, other.yr, other.zr),
     ).filter {
         it.volume != 0L
     }
 
-    infix fun Region.reduceBy(toSubtract: Reg): List<Region> =
+    infix fun Region.reduceBy(toSubtract: Cube): List<Region> =
         (this - toSubtract).map {
-            Region(on, it.toList(), contained = contained.mapNotNull { sub ->
+            Region(on, it, contained = contained.mapNotNull { sub ->
                 when {
                     sub in toSubtract -> null
                     sub disjunct toSubtract -> listOf(sub)
@@ -128,27 +133,17 @@ class Day22 : Day(22, 2021, "Reactor Reboot") {
             }.flatten())
         }
 
-    infix fun Region.combineWith(other: Region): Region = when {
-        on != other.on ->  // off region, want to switch on
-            when {
-                // all former ons are within the new on
-                contained.all { it in other } -> copy(contained = listOf(other))
-                else -> copy(contained = listOf(other) + contained.flatMap { subOn ->
-                    if (subOn disjunct other) listOf(subOn)
-                    else subOn reduceBy (subOn overlap other)
-                })
-            }
-        else ->  // in off Region, want to switch off
-            copy(contained = contained.flatMap { subOn ->
-                if (subOn disjunct other) listOf(subOn)
-                else subOn reduceBy (subOn overlap other)
-            })
-    }
+    infix fun Region.combineWith(toAdd: Region): Region =
+        // all former ons are within the new on
+        copy(contained = contained.flatMap { subOn ->
+            if (subOn disjunct toAdd) listOf(subOn)
+            else (subOn reduceBy (subOn overlap toAdd))
+        } + if (on != toAdd.on) listOf(toAdd) else emptyList())
 
     override fun part2(): Any {
-        val startState = Region(false, listOf(maxRange, maxRange, maxRange))
+        val startState = Region(false, Cube.fromList(listOf(maxRange, maxRange, maxRange)))
         val endState = steps.fold(startState) { acc, step -> acc combineWith step }
-        return endState.countOn()
+        return endState.countOnStates()
     }
 
 }
