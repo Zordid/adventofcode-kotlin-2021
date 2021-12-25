@@ -3,7 +3,7 @@ import utils.*
 class Day11 : Day(11, 2021, "Dumbo Octopus") {
 
     val levels: EnergyGrid = mappedInput { it.toList().map { it.digitToInt() } }
-    private val area = levels.area()
+    private val area = levels.area
 
     override fun part1() =
         (1..100).fold(levels to 0) { (l, flashedAcc), _ ->

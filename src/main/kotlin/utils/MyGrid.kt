@@ -14,7 +14,7 @@ interface MyGrid<T> {
     }
 
     private class BaseGrid<T>(val underlying: List<List<T>>) : MyGrid<T> {
-        override val area = underlying.area()
+        override val area = underlying.area
         override fun getOrNull(p: Point): T? = with(underlying) {
             if (p.y in indices && p.x in this[p.y].indices) this[p.y][p.x] else null
         }

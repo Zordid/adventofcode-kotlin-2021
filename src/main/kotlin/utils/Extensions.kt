@@ -55,7 +55,9 @@ fun <T> Grid<T>.fix(default: T): Grid<T> {
     }
 }
 
-fun Grid<*>.area(): Area = origin to (first().size - 1 to size - 1)
+val Grid<*>.area: Area get() = origin to (first().size - 1 to size - 1)
+inline fun <T> Grid<T>.searchIndices(crossinline predicate: (T) -> Boolean): Sequence<Point> =
+    area.allPoints().filter { predicate(this[it]) }
 
 @JvmName("areaString")
 fun List<String>.area(): Area = origin to (first().length - 1 to size - 1)
@@ -95,7 +97,7 @@ fun <T> Grid<T>.println(transform: (Point, T) -> String = { _, value -> value.to
 }
 
 operator fun <T> Grid<T>.get(p: Point): T =
-    if (p.y in indices && p.x in this[p.y].indices) this[p.y][p.x] else error("Point $p not in grid of area ${area()}")
+    if (p.y in indices && p.x in this[p.y].indices) this[p.y][p.x] else error("Point $p not in grid of area $area")
 
 fun <T> Grid<T>.getOrNull(p: Point): T? =
     if (p.y in indices && p.x in this[p.y].indices) this[p.y][p.x] else null
@@ -105,7 +107,7 @@ fun <T> Grid<T>.getOrElse(p: Point, default: (Point) -> T): T =
 
 operator fun <T> MutableGrid<T>.set(p: Point, v: T) {
     if (p.y in indices && p.x in this[p.y].indices) this[p.y][p.x] = v
-    else error("Point $p not in grid of area ${area()}")
+    else error("Point $p not in grid of area $area")
 }
 
 operator fun List<String>.get(p: Point): Char =

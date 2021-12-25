@@ -61,6 +61,9 @@ abstract class PixelGameEngine {
     private lateinit var buffer: Array<Color>
     private lateinit var panel: GamePanel
 
+    fun construct(area: Area, pixelDimensions: Point = 1 to 1, appName: String = "PixelGameEngne") =
+        construct(area.width, area.height, pixelDimensions.x, pixelDimensions.y, appName)
+
     fun construct(
         screenWidth: Int,
         screenHeight: Int,

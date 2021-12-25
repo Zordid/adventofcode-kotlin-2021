@@ -3,7 +3,7 @@ import utils.*
 class Day09 : Day(9, 2021, "Smoke Basin") {
 
     val heights = mappedInput { it.toList().map { it.digitToInt() } }
-    val bounds = heights.area()
+    val bounds = heights.area
 
     override fun part1() = bounds.allPoints().sumOf { p ->
         if (p.isLow()) p.riskLevel() else 0

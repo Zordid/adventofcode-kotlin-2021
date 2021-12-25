@@ -4,7 +4,7 @@ import utils.*
 class Day15 : Day(15, 2021, "Chiton") {
 
     val risks: Grid<Int> = mappedInput { it.toList().map { it.digitToInt() } }
-    val area = risks.area()
+    val area = risks.area
 
     val graphSmall = object : Graph<Point> {
         override fun neighborsOf(node: Point): Collection<Point> = node.directNeighbors(area)
