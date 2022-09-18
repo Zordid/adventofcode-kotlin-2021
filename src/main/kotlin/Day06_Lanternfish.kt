@@ -19,6 +19,7 @@ class Day06 : Day(6, 2021, "Lanternfish") {
             }
             return ages
         }
+
         private inline fun <reified T> Array<T>.rotateLeft() = Array(size) { this[(it + 1) % size] }
     }
 }

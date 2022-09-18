@@ -32,7 +32,8 @@ class Day13 : Day(13, 2021, "Transparent Origami") {
 }
 
 fun main() {
-    solve<Day13>("""
+    solve<Day13>(
+        """
         6,10
         0,14
         9,10
@@ -54,5 +55,6 @@ fun main() {
 
         fold along y=7
         fold along x=5
-    """.trimIndent(), 17)
+    """.trimIndent(), 17
+    )
 }

@@ -3,7 +3,7 @@ import utils.*
 class Day23 : Day(23, 2021) {
 
     val initialMap: Grid<Char> = mappedInput { it.toList() }
-    val area = initialMap.area()
+    val area = initialMap.area
     val costs = listOf(1, 10, 100, 1000)
 
     val sideRoomsX = listOf(3, 5, 7, 9)
@@ -88,8 +88,12 @@ class Day23 : Day(23, 2021) {
                     for (p in hallway) {
                         if (p.x !in sideRoomsX || p.x == sideRoomsX[type])
                             if (current.freeTo(p))
-                                add(State(amphipods.move(type, n, p),
-                                    energy + (current manhattanDistanceTo p) * costs[type]))
+                                add(
+                                    State(
+                                        amphipods.move(type, n, p),
+                                        energy + (current manhattanDistanceTo p) * costs[type]
+                                    )
+                                )
                     }
                 }
                 hallway@ for ((n, type) in inHallway) {
@@ -103,12 +107,16 @@ class Day23 : Day(23, 2021) {
 
                     val current = amphipods[type][n]
 
-                    val firstFreeY = (sideRoomsY.last downTo sideRoomsY.first).firstOrNull { y->
+                    val firstFreeY = (sideRoomsY.last downTo sideRoomsY.first).firstOrNull { y ->
                         current.freeTo(destX to y)
                     }
-                    if (firstFreeY!=null)
-                        add(State(amphipods.move(type, n, destX to firstFreeY),
-                            energy + (current manhattanDistanceTo (destX to firstFreeY)) * costs[type]))
+                    if (firstFreeY != null)
+                        add(
+                            State(
+                                amphipods.move(type, n, destX to firstFreeY),
+                                energy + (current manhattanDistanceTo (destX to firstFreeY)) * costs[type]
+                            )
+                        )
                 }
             }
         }
@@ -145,10 +153,6 @@ class Day23 : Day(23, 2021) {
         return result!!.energy
     }
 
-    override fun part2(): Any {
-        return super.part2()
-    }
-
     fun Grid<Char>.searchFor(c: Char): List<Point> = sequence {
         area.forEach { p -> if (this@searchFor[p] == c) yield(p) }
     }.toList()
@@ -156,7 +160,8 @@ class Day23 : Day(23, 2021) {
 }
 
 fun main() {
-    solve<Day23>("""
+    solve<Day23>(
+        """
         #############
         #...........#
         ###B#C#B#D###
@@ -164,5 +169,6 @@ fun main() {
           #D#B#A#C#  
           #A#D#C#A#  
           #########  
-    """.trimIndent(), 44169 )
+    """.trimIndent(), 44169
+    )
 }

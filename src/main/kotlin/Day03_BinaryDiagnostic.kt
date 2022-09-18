@@ -36,7 +36,8 @@ class Day03 : Day(3, 2021, "Binary Diagnostic") {
 }
 
 fun main() {
-    solve<Day03>("""
+    solve<Day03>(
+        """
         00100
         11110
         10110
@@ -49,5 +50,6 @@ fun main() {
         11001
         00010
         01010
-    """.trimIndent(), 198, 230)
+    """.trimIndent(), 198, 230
+    )
 }

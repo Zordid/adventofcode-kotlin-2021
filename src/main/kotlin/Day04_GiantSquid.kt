@@ -1,5 +1,3 @@
-import kotlin.system.exitProcess
-
 class Day04 : Day(4, 2021, "Giant Squid") {
 
     private val sections = inputAsString.split("\n\n")
@@ -13,7 +11,7 @@ class Day04 : Day(4, 2021, "Giant Squid") {
     }
 
     private fun Board.hasBingo(drawnNumbers: Collection<Int>): Boolean =
-        (rows + columns).any { (it - drawnNumbers).isEmpty() }
+        (rows + columns).any { (it - drawnNumbers.toSet()).isEmpty() }
 
     private fun Board.score(check: Collection<Int>, lastDrawn: Int) =
         flatten().filter { it !in check }.sum() * lastDrawn
@@ -55,7 +53,8 @@ class Day04 : Day(4, 2021, "Giant Squid") {
 typealias Board = Matrix<Int>
 
 fun main() {
-    solve<Day04>("""
+    solve<Day04>(
+        """
 7,4,9,5,11,17,23,2,0,14,21,24,10,16,13,6,15,25,12,22,18,20,8,19,3,26,1
 
 22 13 17 11  0
@@ -75,7 +74,8 @@ fun main() {
 18  8 23 26 20
 22 11 13  6  5
  2  0 12  3  7
-    """.trimIndent(), 4512, 1924)
+    """.trimIndent(), 4512, 1924
+    )
 }
 
 data class Matrix<T>(val rows: List<List<T>>) : List<List<T>> by rows {

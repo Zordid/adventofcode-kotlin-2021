@@ -9,6 +9,7 @@ interface MyGrid<T> {
     companion object {
         fun <T> of(v: List<List<T>>): MyGrid<T> = BaseGrid(v)
         fun <T> of(v: Array<Array<T>>): MyGrid<T> = BaseArrayGrid(v)
+
         @JvmName("ofListOfString")
         fun of(v: List<String>): MyGrid<Char> = BaseCharGrid(v)
     }

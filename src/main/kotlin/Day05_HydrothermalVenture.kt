@@ -60,7 +60,8 @@ class Day05 : Day(5, 2021, "Hydrothermal Venture") {
 }
 
 fun main() {
-    solve<Day05>("""
+    solve<Day05>(
+        """
         0,9 -> 5,9
         8,0 -> 0,8
         9,4 -> 3,4
@@ -71,5 +72,6 @@ fun main() {
         3,4 -> 1,4
         0,0 -> 8,8
         5,5 -> 8,2
-    """.trimIndent(), 5, 12)
+    """.trimIndent(), 5, 12
+    )
 }

@@ -8,7 +8,7 @@ class Day15Graphical : PixelGameEngine() {
 
     val riskColor = listOf(Color.BLACK) + createGradient(Color.BLACK, Color.RED, 9)
 
-    val aStar = AStar(area.upperLeft+(area.width/4 to area.height/4),
+    val aStar = AStar(area.upperLeft + (area.width / 4 to area.height / 4),
         { p -> p.directNeighbors() },
         { from, to -> if (to in area) map.cost(from, to) else 1000000 },
         { from, to -> from manhattanDistanceTo to }

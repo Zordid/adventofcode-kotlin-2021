@@ -37,7 +37,9 @@ class Day17 : Day(17, 2021, "Trick Shot") {
 }
 
 fun main() {
-    solve<Day17>("""
+    solve<Day17>(
+        """
         target area: x=20..30, y=-10..-5
-    """.trimIndent(), 45, 112)
+    """.trimIndent(), 45, 112
+    )
 }

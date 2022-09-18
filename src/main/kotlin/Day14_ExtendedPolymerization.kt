@@ -47,7 +47,8 @@ class Day14 : Day(14, 2021, "Extended Polymerization") {
 }
 
 fun main() {
-    solve<Day14>("""
+    solve<Day14>(
+        """
         NNCB
 
         CH -> B
@@ -66,5 +67,6 @@ fun main() {
         BC -> B
         CC -> N
         CN -> C
-    """.trimIndent(), 1588, 2188189693529)
+    """.trimIndent(), 1588, 2188189693529
+    )
 }

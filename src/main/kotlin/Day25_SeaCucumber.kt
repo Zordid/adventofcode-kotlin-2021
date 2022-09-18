@@ -43,7 +43,8 @@ class Day25 : Day(25, 2021, "Sea Cucumber") {
 }
 
 fun main() {
-    solve<Day25>("""
+    solve<Day25>(
+        """
         v...>>.vv>
         .vv>>.vv..
         >>.>v>...v
@@ -53,5 +54,6 @@ fun main() {
         .vv..>.>v.
         v.v..>>v.v
         ....v..v.>
-    """.trimIndent(), 58)
+    """.trimIndent(), 58
+    )
 }

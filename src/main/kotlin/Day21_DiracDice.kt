@@ -63,8 +63,10 @@ class Day21 : Day(21, 2021, "Dirac Dice") {
 }
 
 fun main() {
-    solve<Day21>("""
+    solve<Day21>(
+        """
         Player 1 starting position: 4
         Player 2 starting position: 8
-    """.trimIndent(), 739785, 444356092776315)
+    """.trimIndent(), 739785, 444356092776315
+    )
 }

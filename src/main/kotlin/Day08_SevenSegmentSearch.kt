@@ -29,11 +29,13 @@ class Day08 : Day(8, 2021, "Seven Segment Search") {
                     known[4] allIn u -> 9     // if a 4 is contained, it's a 9
                     else -> 0                 // must be a 0
                 }
+
                 5 -> when { // 2, 3 or 5
                     known[1] allIn u -> 3     // if a 1 is contained, it's a 3
                     u allIn known[9] -> 5     // if it is contained in 9, it's a 5
                     else -> 2                 // must be a 2
                 }
+
                 else -> null
             }?.let { known[it] = u }
         }
@@ -78,7 +80,8 @@ class Day08 : Day(8, 2021, "Seven Segment Search") {
 }
 
 fun main() {
-    solve<Day08>("""
+    solve<Day08>(
+        """
         be cfbegad cbdgef fgaecd cgeb fdcge agebfd fecdb fabcd edb | fdgacbe cefdb cefbgd gcbe
         edbfga begcd cbg gc gcadebf fbgde acbgfd abcde gfcbed gfec | fcgedb cgb dgebacf gc
         fgaebd cg bdaec gdafb agbcfd gdcbef bgcad gfac gcb cdgabef | cg cg fdcagb cbg
@@ -89,5 +92,6 @@ fun main() {
         bdfegc cbegaf gecbf dfcage bdacg ed bedf ced adcbefg gebcd | ed bcgafe cdgba cbgef
         egadfb cdbfeg cegd fecab cgb gbdefca cg fgcdab egfdb bfceg | gbdfcae bgc cg cgb
         gcafb gcf dcaebfg ecagb gf abcdeg gaef cafbge fdbac fegbdc | fgae cfgab fg bagce
-    """.trimIndent(), 26, 61229)
+    """.trimIndent(), 26, 61229
+    )
 }

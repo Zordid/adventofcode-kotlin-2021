@@ -10,7 +10,7 @@ to get up at 5:45 in the morning for almost a month... the addiction is real!
 If you are into programming, logic, maybe also a little into competition, this one is for you as well!
 
 ### Overview of the puzzles
-|Day |Title                             |Runtime|Remarks
+|Day |Title                             |Runtime|Remarks|
 |---:|----------------------------------|---:|----|
 |  1 |Sonar Sweep                       |    |Let's get things started by some sliding windows!|
 |  2 |Dive!                             |    |Figure out a submarines course from numbers      |

@@ -50,12 +50,14 @@ class Day16 : Day(16, 2021, "Packet Decoder") {
                     } while (!stop)
                     Packet.Value(version, typeId, value.toLong(2))
                 }
+
                 else -> when (next(1)) {
                     "0" -> {
                         val lengthOfSubPackets = nextInt(15)
                         val subPackets = next(lengthOfSubPackets).asBitProvider().decodePackets()
                         Packet.Operation(version, typeId, subPackets)
                     }
+
                     else -> {
                         val numberOfSubPackets = nextInt(11)
                         val subPackets = decodePackets(numberOfSubPackets)

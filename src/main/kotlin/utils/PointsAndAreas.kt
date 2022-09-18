@@ -139,6 +139,7 @@ inline fun Area.forBorder(f: (p: Point) -> Unit) {
             first.y, second.y -> for (x in first.x..second.x) {
                 f(x to y)
             }
+
             else -> {
                 f(first.x to y)
                 f(second.x to y)

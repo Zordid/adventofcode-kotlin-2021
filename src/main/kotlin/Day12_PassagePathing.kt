@@ -51,7 +51,8 @@ class Day12 : Day(12, 2021, "Passage Pathing") {
 typealias CavePath = List<String>
 
 fun main() {
-    solve<Day12>("""
+    solve<Day12>(
+        """
         fs-end
         he-DX
         fs-he
@@ -70,5 +71,6 @@ fun main() {
         zg-he
         pj-fs
         start-RW
-    """.trimIndent(), 226, 3509)
+    """.trimIndent(), 226, 3509
+    )
 }

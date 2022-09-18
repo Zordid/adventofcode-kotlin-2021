@@ -33,11 +33,13 @@ class Day09 : Day(9, 2021, "Smoke Basin") {
 }
 
 fun main() {
-    solve<Day09>("""
+    solve<Day09>(
+        """
         2199943210
         3987894921
         9856789892
         8767896789
         9899965678
-    """.trimIndent(), 15, 1134)
+    """.trimIndent(), 15, 1134
+    )
 }

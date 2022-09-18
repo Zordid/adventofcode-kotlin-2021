@@ -10,7 +10,7 @@ class Day09Graphical : PixelGameEngine() {
     private val basins = lows.associateWith { l ->
         day09.floodFill(l, LinkedHashSet())
     }
-    private val basinIterators = basins.mapValues { (_,v)->
+    private val basinIterators = basins.mapValues { (_, v) ->
         v.iterator()
     }
     private val colors = createGradient(Color.BLUE, Color.RED, 10)
@@ -44,8 +44,7 @@ class Day09Graphical : PixelGameEngine() {
                     draw(it.x, it.y, Color.WHITE)
                 }
                 stop()
-            }
-            else
+            } else
                 sleep(50)
         }
     }

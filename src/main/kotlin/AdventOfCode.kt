@@ -1,3 +1,5 @@
+import com.github.ajalt.mordant.rendering.TextColors
+import com.github.ajalt.mordant.terminal.Terminal
 import org.reflections.Reflections
 import java.io.File
 import java.net.URL
@@ -11,9 +13,10 @@ const val FAST_MODE = false
 @ExperimentalTime
 fun main() {
     verbose = false
-    println("\n~~~ Advent Of Code Runner ~~~\n")
+    val t = Terminal()
+    t.println(TextColors.red("\n~~~ Advent Of Code Runner ~~~\n"))
     val dayClasses = getAllDayClasses().sortedBy(::dayNumber)
-    val totalDuration = dayClasses.map { it.execute() }.reduce(Duration::plus)
+    val totalDuration = dayClasses.map { it.execute() }.reduceOrNull(Duration::plus)
     println("\nTotal runtime: $totalDuration")
 }
 
@@ -91,7 +94,7 @@ inline fun <reified T : Day> solve(
 var verbose = true
 
 @Suppress("unused")
-abstract class Day(val day: Int, private val year: Int = 2021, val title: String = "unknown") {
+sealed class Day(val day: Int, private val year: Int = 2021, val title: String = "unknown") {
 
     init {
         require(day in 1..25) { "Wrong day $day" }

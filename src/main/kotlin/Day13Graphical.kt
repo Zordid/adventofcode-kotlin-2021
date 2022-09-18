@@ -34,14 +34,16 @@ class Day13Graphical : PixelGameEngine() {
                         offsetY,
                         offsetX + fold.line * pixelSize,
                         offsetY + area.height * pixelSize,
-                        pattern = 0xAAAAAAAA)
+                        pattern = 0xAAAAAAAA
+                    )
                 else
                     drawLine(
                         offsetX,
                         offsetY + fold.line * pixelSize,
                         offsetX + area.width * pixelSize,
                         offsetY + fold.line * pixelSize,
-                        pattern = 0xAAAAAAAA)
+                        pattern = 0xAAAAAAAA
+                    )
 
                 this@Day13Graphical.paper = this@Day13Graphical.paper.fold(fold)
             }

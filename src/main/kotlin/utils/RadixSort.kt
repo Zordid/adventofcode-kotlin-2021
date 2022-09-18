@@ -63,6 +63,6 @@ fun main() {
     println("Radix sort took ${radix.duration}")
 
     println(listOf(90, 70, 50, 80, 10).radixSort())
-    println(listOf(0,1,0,1).radixSort())
+    println(listOf(0, 1, 0, 1).radixSort())
 
 }

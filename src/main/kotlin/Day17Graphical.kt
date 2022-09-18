@@ -49,7 +49,8 @@ class Day17Graphical : PixelGameEngine() {
             targetBox.second.y.oY(),
             targetBox.width,
             targetBox.height,
-            Color.RED)
+            Color.RED
+        )
 
         if (frame == 0L)
             return hold(1000)

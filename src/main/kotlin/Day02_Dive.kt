@@ -27,12 +27,14 @@ class Day02 : Day(2, 2021, "Dive!") {
 }
 
 fun main() {
-    solve<Day02>("""
+    solve<Day02>(
+        """
         forward 5
         down 5
         forward 8
         up 3
         down 8
         forward 2
-    """.trimIndent(), 150, 900)
+    """.trimIndent(), 150, 900
+    )
 }

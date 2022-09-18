@@ -38,7 +38,8 @@ class Day11 : Day(11, 2021, "Dumbo Octopus") {
 typealias EnergyGrid = Grid<Int>
 
 fun main() {
-    solve<Day11>("""
+    solve<Day11>(
+        """
         5483143223
         2745854711
         5264556173
@@ -49,5 +50,6 @@ fun main() {
         6882881134
         4846848554
         5283751526
-    """.trimIndent(), 1656, 195)
+    """.trimIndent(), 1656, 195
+    )
 }

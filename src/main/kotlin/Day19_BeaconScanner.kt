@@ -68,14 +68,18 @@ data class Orientation(val rotX: Int, val rotY: Int, val rotZ: Int) {
 }
 
 operator fun Orientation.plus(other: Orientation) =
-    Orientation((rotX + other.rotX) % 4,
+    Orientation(
+        (rotX + other.rotX) % 4,
         (rotY + other.rotY) % 4,
-        (rotZ + other.rotZ) % 4)
+        (rotZ + other.rotZ) % 4
+    )
 
 operator fun Orientation.minus(other: Orientation) =
-    Orientation((rotX - other.rotX).mod(4),
+    Orientation(
+        (rotX - other.rotX).mod(4),
         (rotY - other.rotY).mod(4),
-        (rotZ - other.rotZ).mod(4))
+        (rotZ - other.rotZ).mod(4)
+    )
 
 val origin3D = Point3D(0, 0, 0)
 
