@@ -1,7 +1,7 @@
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 
 plugins {
-    kotlin("jvm") version "1.7.10"
+    kotlin("jvm") version "1.7.21"
     application
 }
 
@@ -19,12 +19,12 @@ dependencies {
     implementation("org.reflections:reflections:0.9.12")
     implementation("com.github.ajalt.mordant:mordant:2.0.0-beta7")
     //implementation("guru.nidi:graphviz-kotlin:0.18.1")
-    implementation("org.slf4j:slf4j-nop:2.0.0")
+    implementation("org.slf4j:slf4j-nop:2.0.3")
     //implementation("ch.qos.logback", "logback-classic", "1.2.3")
 
     testImplementation("org.junit.jupiter:junit-jupiter-api:5.9.0")
     testImplementation("org.junit.jupiter:junit-jupiter-params:5.9.0")
-    testImplementation("io.kotest:kotest-assertions-core-jvm:5.4.2")
+    testImplementation("io.kotest:kotest-assertions-core-jvm:5.5.4")
     testRuntimeOnly("org.junit.jupiter:junit-jupiter-engine:5.9.0")
 }
 

@@ -17,17 +17,20 @@ class Day05Graphical : PixelGameEngine() {
     var line = 0
 
     override fun onUpdate(elapsedTime: Long, frame: Long) {
-        if (line <= lines.lastIndex) {
-            val l = lines[line++]
-            drawLine(l.p1.x, l.p1.y, l.p2.x, l.p2.y)
-        } else if (line == lines.lastIndex + 1) {
-            val red = lines.flatMap { it.allPoints }.groupingBy { it }.eachCount().filter { it.value > 1 }.keys
-            red.forEach {
-                draw(it.x, it.y, Color.RED)
+        when {
+            line <= lines.lastIndex -> {
+                val l = lines[line++]
+                drawLine(l.p1.x, l.p1.y, l.p2.x, l.p2.y)
             }
-            line++
-        } else
-            sleep(1000)
+            line == lines.lastIndex + 1 -> {
+                val red = lines.flatMap { it.allPoints }.groupingBy { it }.eachCount().filter { it.value > 1 }.keys
+                red.forEach {
+                    draw(it.x, it.y, Color.RED)
+                }
+                line++
+            }
+            else -> stop()
+        }
     }
 
 }

@@ -14,6 +14,10 @@ class Day15Graphical : PixelGameEngine() {
         { from, to -> from manhattanDistanceTo to }
     )
 
+    override fun onCreate() {
+        construct(area.width, area.height, appName = day15.title)
+    }
+
     override fun onUpdate(elapsedTime: Long, frame: Long) {
         if (frame == 0L) {
             area.forEach { p ->
@@ -36,9 +40,5 @@ class Day15Graphical : PixelGameEngine() {
 }
 
 fun main() {
-    with(Day15Graphical()) {
-        construct(area.width, area.height, 1, 1)
-        //limitFps = 120
-        start()
-    }
+    Day15Graphical().start()
 }

@@ -10,28 +10,32 @@ class Day11Graphical : PixelGameEngine() {
 
     val colorBand = createGradient(Color.BLACK, Color.RED, 10)
 
-    override fun onUpdate(elapsedTime: Long, frame: Long) {
-        if (frame == 0L) {
-            drawCurrent()
-            return
-        }
+    override fun onCreate() {
+        construct(10, 10, 30, 30, day11.title)
+        limitFps = 100
+    }
 
-        if (frame % 12L == 0L) {
-            cycle++
-            appInfo = "Cycle $cycle"
-            val n = with(day11) { current.step() }
-            current = n.first
-            flashing = n.second
-            drawCurrent()
-        } else {
-            if (frame % 2L == 0L)
-                flashing.forEach {
-                    draw(it.x, it.y, Color.WHITE)
-                }
-            else
-                flashing.forEach {
-                    draw(it.x, it.y, colorBand[current[it]])
-                }
+    override fun onUpdate(elapsedTime: Long, frame: Long) {
+        when {
+            frame == 0L -> drawCurrent()
+            frame % 12L == 0L -> {
+                cycle++
+                appInfo = "Cycle $cycle"
+                val n = with(day11) { current.step() }
+                current = n.first
+                flashing = n.second
+                drawCurrent()
+            }
+            else -> {
+                if (frame % 2L == 0L)
+                    flashing.forEach {
+                        draw(it.x, it.y, Color.WHITE)
+                    }
+                else
+                    flashing.forEach {
+                        draw(it.x, it.y, colorBand[current[it]])
+                    }
+            }
         }
     }
 
@@ -44,9 +48,5 @@ class Day11Graphical : PixelGameEngine() {
 }
 
 fun main() {
-    with(Day11Graphical()) {
-        construct(10, 10, 30, 30, day11.title)
-        limitFps = 100
-        start()
-    }
+    Day11Graphical().start()
 }

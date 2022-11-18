@@ -15,6 +15,10 @@ class Day09Graphical : PixelGameEngine() {
     }
     private val colors = createGradient(Color.BLUE, Color.RED, 10)
 
+    override fun onCreate() {
+        construct(bounds.width, bounds.height, 5, 5, day09.title)
+    }
+
     override fun onUpdate(elapsedTime: Long, frame: Long) {
         if (frame == 0L) {
             bounds.forEach {
@@ -52,8 +56,5 @@ class Day09Graphical : PixelGameEngine() {
 }
 
 fun main() {
-    with(Day09Graphical()) {
-        construct(bounds.width, bounds.height, 5, 5, day09.title)
-        start()
-    }
+    Day09Graphical().start()
 }

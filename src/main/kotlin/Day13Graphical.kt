@@ -11,8 +11,13 @@ class Day13Graphical : PixelGameEngine() {
     var nextFold = 0
     var paper = initialPaper
 
+    override fun onCreate() {
+        construct(initialArea.width, initialArea.height, appName = day13.title)
+    }
+
     override fun onUpdate(elapsedTime: Long, frame: Long) {
-        if (frame > 0L) sleep(1000)
+        hold(1000)
+        appInfo = "$frame folds"
 
         val area = paper.boundingArea()!!
         val pixelSize = minOf(initialArea.width / area.width, initialArea.height / area.height)
@@ -23,7 +28,10 @@ class Day13Graphical : PixelGameEngine() {
         clear(Color.BLACK)
         area.forEach { p ->
             val color = if (p in paper) Color.RED else Color.BLACK
-            fillRect(offsetX + p.x * pixelSize, offsetY + p.y * pixelSize, pixelSize, pixelSize, color)
+            if (pixelSize > 1)
+                fillRect(offsetX + p.x * pixelSize, offsetY + p.y * pixelSize, pixelSize, pixelSize, color)
+            else
+                draw(offsetX + p.x, offsetY + p.y, color)
         }
         if (nextFold in folds.indices)
             with(day13) {
@@ -50,15 +58,12 @@ class Day13Graphical : PixelGameEngine() {
         else {
             nextFold = 0
             paper = initialPaper
-            hold(10000)
+            stop()
         }
     }
 
 }
 
 fun main() {
-    with(Day13Graphical()) {
-        construct(initialArea.width, initialArea.height, 1, 1)
-        start()
-    }
+    Day13Graphical().start()
 }

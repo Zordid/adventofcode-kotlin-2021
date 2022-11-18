@@ -15,8 +15,13 @@ class Day25Graphical : PixelGameEngine() {
         )
     }
 
+    override fun onCreate() {
+        construct(day25.seaFloor.area.width, day25.seaFloor.area.height, 5, 5, "AoC 2021 Day 25")
+        limitFps = 20
+    }
+
     override fun onUpdate(elapsedTime: Long, frame: Long) {
-        appInfo = "Step #${frame}"
+        appInfo = "step #${frame}"
         area.forEach {
             val prevColor = when (it) {
                 in prevState.east -> Color.YELLOW
@@ -42,10 +47,7 @@ class Day25Graphical : PixelGameEngine() {
 
 }
 
+
 fun main() {
-    with(Day25Graphical()) {
-        construct(day25.seaFloor.area, 5 to 5)
-        limitFps = 20
-        start()
-    }
+    Day25Graphical().start()
 }

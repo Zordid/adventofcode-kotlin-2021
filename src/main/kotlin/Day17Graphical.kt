@@ -87,7 +87,6 @@ class Day17Graphical : PixelGameEngine() {
 
 }
 
-
 fun main() {
     with(Day17Graphical()) {
         construct(area.width + 10, area.height + 2, 3, 3)
