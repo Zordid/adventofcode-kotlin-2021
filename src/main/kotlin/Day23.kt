@@ -3,21 +3,116 @@ import utils.*
 class Day23 : Day(23, 2021) {
 
     val initialMap: Grid<Char> = mappedInput { it.toList() }
-    val area = initialMap.area()
+    val area = initialMap.area
     val costs = listOf(1, 10, 100, 1000)
-
     val sideRoomsX = listOf(3, 5, 7, 9)
     val sideRoomsY = 2..5
     val hallwayY = 1
-    val hallway = initialMap.searchFor('.')
-    val WALL = '#'
-    val FREE = '.'
+    val hallway = initialMap.searchIndices { it == '.' }
+
+    data class MapLayout(val hallway: List<Point>, val rooms: List<List<Point>>) {
+        val hallwayY = hallway.map { it.y }.distinct().single()
+        val roomsX = rooms.map { it.first().x }.distinct().sorted()
+        val roomsY = rooms.first().map { it.y }.rangeOrNull()!!
+
+        companion object {
+            fun fromInput(map: Grid<Char>): MapLayout {
+                val rooms = map.searchIndices { it.isLetter() }.toSet()
+                val listOfRooms = rooms.map { it.y }.distinct().sorted()
+                    .map { y -> rooms.filter { it.y == y }.sortedByDescending { it.y } }
+                return MapLayout(
+                    map.searchIndices { it == FREE }.toList(),
+                    listOfRooms
+                )
+            }
+
+            private const val FREE = '.'
+        }
+
+    }
+
+    data class Amphipod(val type: Char, val pos: Point) {
+        val typeId: Int get() = type - 'A'
+    }
+
+    data class NewState(val pods: Set<Amphipod>) {
+
+        fun isFinal(layout: MapLayout): Boolean =
+            pods.all { it.pos.y > layout.hallwayY && it.pos.x == layout.roomsX[it.typeId] }
+
+        fun possibleMoves(layout: MapLayout): List<NewState> {
+            with(layout) {
+                val (podsInRooms, podsInHallway) = pods.partition { it.pos.y > hallwayY }
+                val openRooms = rooms.mapIndexed { idx, r ->
+                    r.none { p -> pods.firstOrNull { it.pos == p && it.typeId != idx } != null }
+                }
+                val emptyRoomPos = rooms.mapIndexed { idx, r ->
+                    r.firstOrNull { p -> pods.none { it.pos == p } }
+                }
+                val firstInRoom = rooms.mapIndexed { idx, r ->
+                    //r.
+                }
+
+                return buildList {
+                    podsInHallway.forEach { pod ->
+                        if (openRooms[pod.typeId]) {
+                            val range =
+                                if (roomsX[pod.typeId] > pod.pos.x)
+                                    pod.pos.x + 1..roomsX[pod.typeId]
+                                else
+                                    roomsX[pod.typeId] until pod.pos.x
+                            if (range.none { x -> x to hallwayY in podsInHallway.map { it.pos } })
+                                add(NewState(pods - pod + pod.copy(pos = emptyRoomPos[pod.typeId]!!)))
+                        }
+                    }
+                }
+
+
+                val inHallway = pods.filter { it.pos.y == hallwayY }.toSet()
+                val inRooms = rooms.map { it.mapNotNull { p -> pods.singleOrNull { pod -> pod.pos == p } } }
+                val occupied = pods.map(Amphipod::pos)
+                val freePosInRoom: List<Point?> = layout.rooms.map { it.firstOrNull { p -> p !in occupied } }
+                TODO()
+            }
+        }
+
+        companion object {
+            fun fromMap(map: Grid<Char>): NewState =
+                NewState(map.area.allPoints().mapNotNull { p ->
+                    map[p].takeIf { it.isLetter() }?.let { Amphipod(it, p) }
+                }.toSet())
+        }
+
+        override fun equals(other: Any?): Boolean {
+            if (this === other) return true
+            if (javaClass != other?.javaClass) return false
+
+            other as NewState
+
+            if (pods != other.pods) return false
+
+            return true
+        }
+
+        override fun hashCode(): Int {
+            return pods.hashCode()
+        }
+    }
+
+    val part1Layout = MapLayout.fromInput(initialMap)
+    val part2Layout = MapLayout.fromInput(initialMap.take(3) +
+            """
+            |  #D#C#B#A#
+            |  #D#B#A#C#
+            """.trimMargin().toGrid() +
+            initialMap.drop(3)
+    )
 
     val initialState = State(listOf(
-        initialMap.searchFor('A').sortedBy { it.y },
-        initialMap.searchFor('B').sortedBy { it.y },
-        initialMap.searchFor('C').sortedBy { it.y },
-        initialMap.searchFor('D').sortedBy { it.y }
+        initialMap.searchIndices { it == 'A' }.toList().sortedBy { it.y },
+        initialMap.searchIndices { it == 'B' }.toList().sortedBy { it.y },
+        initialMap.searchIndices { it == 'C' }.toList().sortedBy { it.y },
+        initialMap.searchIndices { it == 'D' }.toList().sortedBy { it.y },
     ), 0)
 
     val amphiIndex = (0..3).map { type ->
@@ -103,10 +198,10 @@ class Day23 : Day(23, 2021) {
 
                     val current = amphipods[type][n]
 
-                    val firstFreeY = (sideRoomsY.last downTo sideRoomsY.first).firstOrNull { y->
+                    val firstFreeY = (sideRoomsY.last downTo sideRoomsY.first).firstOrNull { y ->
                         current.freeTo(destX to y)
                     }
-                    if (firstFreeY!=null)
+                    if (firstFreeY != null)
                         add(State(amphipods.move(type, n, destX to firstFreeY),
                             energy + (current manhattanDistanceTo (destX to firstFreeY)) * costs[type]))
                 }
@@ -149,9 +244,6 @@ class Day23 : Day(23, 2021) {
         return super.part2()
     }
 
-    fun Grid<Char>.searchFor(c: Char): List<Point> = sequence {
-        area.forEach { p -> if (this@searchFor[p] == c) yield(p) }
-    }.toList()
 
 }
 
@@ -164,5 +256,7 @@ fun main() {
           #D#B#A#C#  
           #A#D#C#A#  
           #########  
-    """.trimIndent(), 44169 )
+    """.trimIndent(), 44169)
 }
+
+private fun String.toGrid(): Grid<Char> = split("\n").map { it.toList() }
