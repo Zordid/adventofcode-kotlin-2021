@@ -139,6 +139,7 @@ inline fun Area.forBorder(f: (p: Point) -> Unit) {
             first.y, second.y -> for (x in first.x..second.x) {
                 f(x to y)
             }
+
             else -> {
                 f(first.x to y)
                 f(second.x to y)
@@ -191,24 +192,17 @@ interface Direction {
 operator fun Direction.times(n: Int): Point = vector * n
 operator fun Point.plus(direction: Direction): Point = this + direction.vector
 
-enum class Direction4 : Direction {
-    NORTH, EAST, SOUTH, WEST;
+enum class Direction4(override val vector: Point) : Direction {
+    NORTH(0 to -1), EAST(1 to 0), SOUTH(0 to 1), WEST(-1 to 0);
 
-    override val right: Direction4
-        get() = values()[(this.ordinal + 1) % values().size]
-    override val left: Direction4
-        get() = values()[(this.ordinal - 1 + values().size) % values().size]
-    override val opposite: Direction4
-        get() = values()[(this.ordinal + 2) % values().size]
-    override val vector: Point
-        get() = when (this) {
-            NORTH -> 0 to -1
-            SOUTH -> 0 to 1
-            WEST -> -1 to 0
-            EAST -> 1 to 0
-        }
+    override val right = values()[(ordinal + 1) % values().size]
+    override val left = values()[(ordinal - 1 + values().size) % values().size]
+    override val opposite = values()[(ordinal + values().size / 2) % values().size]
 
     companion object {
+        val values = values().toList()
+        val allVectors: List<Point> = values.map { it.vector }
+
         val UP = NORTH
         val RIGHT = EAST
         val DOWN = SOUTH
@@ -216,16 +210,8 @@ enum class Direction4 : Direction {
 
         fun ofVector(p1: Point, p2: Point): Direction4? = ofVector(p2 - p1)
 
-        fun ofVector(v: Point): Direction4? =
-            with(v) {
-                when (x.sign to y.sign) {
-                    0 to -1 -> NORTH
-                    1 to 0 -> EAST
-                    0 to 1 -> SOUTH
-                    -1 to 0 -> WEST
-                    else -> null
-                }
-            }
+        fun ofVector(v: Point) =
+            values.firstOrNull { it.vector.x == v.x.sign && it.vector.y == v.y.sign }
 
         fun interpret(s: Any): Direction? = when (s.toString().uppercase()) {
             NORTH.name, "N" -> NORTH
@@ -235,62 +221,42 @@ enum class Direction4 : Direction {
             else -> null
         }
 
-        val allVectors: List<Point> = values().map { it.vector }
-
         inline fun forEach(action: (Direction) -> Unit) {
-            values().forEach(action)
+            values.forEach(action)
         }
     }
 }
 
-enum class Direction8 : Direction {
-    NORTH, NORTHEAST, EAST, SOUTHEAST, SOUTH, SOUTHWEST, WEST, NORTHWEST;
+enum class Direction8(override val vector: Point) : Direction {
+    NORTH(0 to -1),
+    NORTHEAST(1 to -1),
+    EAST(1 to 0),
+    SOUTHEAST(1 to 1),
+    SOUTH(0 to 1),
+    SOUTHWEST(-1 to 1),
+    WEST(-1 to 0),
+    NORTHWEST(-1 to -1);
 
-    override val right: Direction8
-        get() = values()[(this.ordinal + 1) % values().size]
-    override val left: Direction8
-        get() = values()[(this.ordinal - 1 + values().size) % values().size]
-    override val opposite: Direction8
-        get() = values()[(this.ordinal + 4) % values().size]
-    override val vector: Point
-        get() = when (this) {
-            NORTH -> 0 to -1
-            NORTHEAST -> 1 to -1
-            EAST -> 1 to 0
-            SOUTHEAST -> 1 to 1
-            SOUTH -> 0 to 1
-            SOUTHWEST -> -1 to 1
-            WEST -> -1 to 0
-            NORTHWEST -> -1 to -1
-        }
+    override val right = values()[(ordinal + 1) % values().size]
+    override val left = values()[(ordinal - 1 + values().size) % values().size]
+    override val opposite = values()[(ordinal + values().size / 2) % values().size]
 
     companion object {
+        val values = values().toList()
+        val allVectors: List<Point> = values.map { it.vector }
+
         val UP = NORTH
         val RIGHT = EAST
         val DOWN = SOUTH
         val LEFT = WEST
 
-        fun ofVector(p1: Point, p2: Point): Direction8? = ofVector(p2 - p1)
+        fun ofVector(p1: Point, p2: Point) = ofVector(p2 - p1)
 
-        fun ofVector(v: Point): Direction8? =
-            with(v) {
-                when (x.sign to y.sign) {
-                    NORTH.vector -> NORTH
-                    NORTHEAST.vector -> NORTHEAST
-                    EAST.vector -> EAST
-                    SOUTHEAST.vector -> SOUTHEAST
-                    SOUTH.vector -> SOUTH
-                    SOUTHWEST.vector -> SOUTHWEST
-                    WEST.vector -> WEST
-                    NORTHWEST.vector -> NORTHWEST
-                    else -> null
-                }
-            }
-
-        val allVectors: List<Point> = values().map { it.vector }
+        fun ofVector(v: Point) =
+           values.firstOrNull { it.vector.x == v.x.sign && it.vector.y == v.y.sign }
 
         inline fun forEach(action: (Direction) -> Unit) {
-            Direction4.values().forEach(action)
+            values.forEach(action)
         }
     }
 }

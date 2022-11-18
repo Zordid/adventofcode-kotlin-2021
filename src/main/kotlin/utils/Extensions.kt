@@ -57,7 +57,7 @@ fun <T> Grid<T>.fix(default: T): Grid<T> {
 
 val Grid<*>.area: Area get() = origin to (first().size - 1 to size - 1)
 inline fun <T> Grid<T>.searchIndices(crossinline predicate: (T) -> Boolean): Sequence<Point> =
-    area.allPoints().filter { predicate(this[it]) }
+    area.allPoints().filter { this.getOrNull(it)?.let(predicate) ?: false }
 
 @JvmName("areaString")
 fun List<String>.area(): Area = origin to (first().length - 1 to size - 1)
