@@ -3,6 +3,8 @@
 package utils
 
 import kotlin.math.absoluteValue
+import kotlin.math.max
+import kotlin.math.min
 import kotlin.math.sign
 
 typealias Point = Pair<Int, Int>
@@ -58,7 +60,7 @@ fun Point.rotateLeft90(times: Int = 1): Point = when (times % 4) {
     1 -> y to -x
     2 -> -x to -y
     3 -> -y to x
-    else -> error("can't rotate $times timess")
+    else -> rotateLeft90(-times)
 }
 
 fun Point.rotateRight90(times: Int = 1): Point = when (times % 4) {
@@ -66,7 +68,7 @@ fun Point.rotateRight90(times: Int = 1): Point = when (times % 4) {
     1 -> -y to x
     2 -> -x to -y
     3 -> y to -x
-    else -> error("can't rotate $times timess")
+    else -> rotateLeft90(-times)
 }
 
 operator fun Point.compareTo(other: Point): Int =
@@ -87,8 +89,9 @@ operator fun Point.rangeTo(other: Point): Sequence<Point> = when (other) {
     }
 }
 
+fun areaOf(a: Point, b: Point): Area = (min(a.x, b.x) to min(a.y, b.y)) to (max(a.x, b.x) to max(a.y, b.y))
 fun Area.isValid(): Boolean = first.x <= second.x && first.y <= second.y
-fun Area.fix(): Area = if (isValid()) this else listOf(first, second).boundingArea()!!
+fun Area.fix(): Area = if (isValid()) this else areaOf(first, second)
 
 fun Area.grow(by: Int = 1): Area = upperLeft.left(by).up(by) to lowerRight.right(by).down(by)
 fun Area.shrink(by: Int = 1): Area = upperLeft.left(-by).up(-by) to lowerRight.right(-by).down(-by)
@@ -99,17 +102,17 @@ fun Area.isNotEmpty() = !isEmpty()
 val Area.size: Int
     get() = width * height
 
-val Area.upperLeft: Point
-    get() = first
-val Area.lowerRight: Point
-    get() = second
-val Area.upperRight: Point
-    get() = second.x to first.y
-val Area.lowerLeft: Point
-    get() = first.x to second.y
+val Area.upperLeft: Point get() = first
+val Area.lowerRight: Point get() = second
+val Area.upperRight: Point get() = second.x to first.y
+val Area.lowerLeft: Point get() = first.x to second.y
+val Area.left: Int get() = first.x
+val Area.right: Int get() = second.x
+val Area.top: Int get() = first.y
+val Area.bottom: Int get() = second.y
 
 fun allPointsInArea(from: Point, to: Point): Sequence<Point> =
-    listOf(from, to).boundingArea()!!.allPoints()
+    areaOf(from, to).allPoints()
 
 private val areaRegex = ".*?(\\d+)\\D+(\\d+)\\D+(\\d+)\\D+(\\d+).*".toRegex()
 
@@ -156,6 +159,9 @@ val Area.width: Int
 val Area.height: Int
     get() = (second.y - first.y + 1).coerceAtLeast(0)
 
+fun Area.overlaps(other: Area): Boolean =
+    max(left, other.left) <= min(right, other.right) && max(top, other.top) <= min(bottom, other.bottom)
+
 fun <T> Area.mutableGridOf(init: (Point) -> T): MutableGrid<T> {
     require(isNotEmpty()) { "Area $this is empty and cannot create a grid" }
     return (0 until height).map { y ->
@@ -195,13 +201,13 @@ operator fun Point.plus(direction: Direction): Point = this + direction.vector
 enum class Direction4(override val vector: Point) : Direction {
     NORTH(0 to -1), EAST(1 to 0), SOUTH(0 to 1), WEST(-1 to 0);
 
-    override val right = values()[(ordinal + 1) % values().size]
-    override val left = values()[(ordinal - 1 + values().size) % values().size]
-    override val opposite = values()[(ordinal + values().size / 2) % values().size]
+    override val right by lazy { values()[(ordinal + 1) % values().size] }
+    override val left by lazy { values()[(ordinal - 1 + values().size) % values().size] }
+    override val opposite by lazy { values()[(ordinal + values().size / 2) % values().size] }
 
     companion object {
         val values = values().toList()
-        val allVectors: List<Point> = values.map { it.vector }
+        val allVectors = values.map { it.vector }
 
         val UP = NORTH
         val RIGHT = EAST
@@ -237,13 +243,13 @@ enum class Direction8(override val vector: Point) : Direction {
     WEST(-1 to 0),
     NORTHWEST(-1 to -1);
 
-    override val right = values()[(ordinal + 1) % values().size]
-    override val left = values()[(ordinal - 1 + values().size) % values().size]
-    override val opposite = values()[(ordinal + values().size / 2) % values().size]
+    override val right by lazy { values()[(ordinal + 1) % values().size] }
+    override val left by lazy { values()[(ordinal - 1 + values().size) % values().size] }
+    override val opposite by lazy { values()[(ordinal + values().size / 2) % values().size] }
 
     companion object {
         val values = values().toList()
-        val allVectors: List<Point> = values.map { it.vector }
+        val allVectors = values.map { it.vector }
 
         val UP = NORTH
         val RIGHT = EAST
@@ -253,7 +259,7 @@ enum class Direction8(override val vector: Point) : Direction {
         fun ofVector(p1: Point, p2: Point) = ofVector(p2 - p1)
 
         fun ofVector(v: Point) =
-           values.firstOrNull { it.vector.x == v.x.sign && it.vector.y == v.y.sign }
+            values.firstOrNull { it.vector.x == v.x.sign && it.vector.y == v.y.sign }
 
         inline fun forEach(action: (Direction) -> Unit) {
             values.forEach(action)
