@@ -3,8 +3,8 @@ package utils
 interface MyGrid<T> {
     val area: Area
     fun getOrNull(p: Point): T?
-    operator fun get(p: Point): T = getOrNull(p) ?: throw NoSuchElementException()
     fun getOrElse(p: Point, default: (Point) -> T): T = getOrNull(p) ?: default(p)
+    operator fun get(p: Point): T = getOrNull(p) ?: throw NoSuchElementException()
 
     companion object {
         fun <T> of(v: List<List<T>>): MyGrid<T> = BaseGrid(v)
