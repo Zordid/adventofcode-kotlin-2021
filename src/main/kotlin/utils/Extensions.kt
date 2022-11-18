@@ -57,7 +57,10 @@ fun <T> Grid<T>.fix(default: T): Grid<T> {
 
 val Grid<*>.area: Area get() = origin to (first().size - 1 to size - 1)
 inline fun <T> Grid<T>.searchIndices(crossinline predicate: (T) -> Boolean): Sequence<Point> =
-    area.allPoints().filter { predicate(this[it]) }
+    area.allPoints().filter { getOrNull(it)?.let(predicate) ?: false }
+
+fun <T> Grid<T>.searchIndices(element: T): Sequence<Point> =
+    searchIndices { it == element }
 
 @JvmName("areaString")
 fun List<String>.area(): Area = origin to (first().length - 1 to size - 1)
@@ -102,7 +105,7 @@ operator fun <T> Grid<T>.get(p: Point): T =
 fun <T> Grid<T>.getOrNull(p: Point): T? =
     if (p.y in indices && p.x in this[p.y].indices) this[p.y][p.x] else null
 
-fun <T> Grid<T>.getOrElse(p: Point, default: (Point) -> T): T =
+inline fun <T> Grid<T>.getOrElse(p: Point, default: (Point) -> T): T =
     if (p.y in indices && p.x in this[p.y].indices) this[p.y][p.x] else default(p)
 
 operator fun <T> MutableGrid<T>.set(p: Point, v: T) {

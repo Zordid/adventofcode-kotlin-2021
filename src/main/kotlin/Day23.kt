@@ -2,22 +2,25 @@ import utils.*
 
 class Day23 : Day(23, 2021) {
 
+    companion object {
+        const val WALL = '#'
+        const val FREE = '.'
+        val costs = listOf(1, 10, 100, 1000)
+    }
+
     val initialMap: Grid<Char> = mappedInput { it.toList() }
     val area = initialMap.area
-    val costs = listOf(1, 10, 100, 1000)
 
     val sideRoomsX = listOf(3, 5, 7, 9)
     val sideRoomsY = 2..5
     val hallwayY = 1
-    val hallway = initialMap.searchFor('.')
-    val WALL = '#'
-    val FREE = '.'
+    val hallway = initialMap.searchIndices(FREE).toList()
 
     val initialState = State(listOf(
-        initialMap.searchFor('A').sortedBy { it.y },
-        initialMap.searchFor('B').sortedBy { it.y },
-        initialMap.searchFor('C').sortedBy { it.y },
-        initialMap.searchFor('D').sortedBy { it.y }
+        initialMap.searchIndices('A').toList().sortedBy { it.y },
+        initialMap.searchIndices('B').toList().sortedBy { it.y },
+        initialMap.searchIndices('C').toList().sortedBy { it.y },
+        initialMap.searchIndices('D').toList().sortedBy { it.y }
     ), 0)
 
     val amphiIndex = (0..3).map { type ->
@@ -39,7 +42,7 @@ class Day23 : Day(23, 2021) {
             println("Energy: $energy")
             initialMap.forArea { p, x ->
                 if (p.x == 0) println()
-                if (x in listOf(' ', '#'))
+                if (x in listOf(' ', WALL))
                     print(x)
                 else {
                     if (p in occupied) {
@@ -62,9 +65,10 @@ class Day23 : Day(23, 2021) {
             } else {
                 val onHallway = (this.x..other.x).fix().all { it == this.x || Point(it, hallwayY) !in occupied }
                 val toRoom = (this.y..other.y).all { Point(other.x, it) !in occupied }
-                (onHallway && toRoom).also {
+                (onHallway && toRoom)
+                    //.also {
                     // println("Hallway check to room failed $this -> $other: $onHallway $toRoom")
-                }
+                    //}
             }
 
         fun possibleMoves(): List<State> {
@@ -153,9 +157,7 @@ class Day23 : Day(23, 2021) {
         return result!!.energy
     }
 
-    fun Grid<Char>.searchFor(c: Char): List<Point> = sequence {
-        area.forEach { p -> if (this@searchFor[p] == c) yield(p) }
-    }.toList()
+
 
 }
 
@@ -165,10 +167,10 @@ fun main() {
         #############
         #...........#
         ###B#C#B#D###
-          #D#C#B#A#  
-          #D#B#A#C#  
-          #A#D#C#A#  
-          #########  
+          #D#C#B#A#
+          #D#B#A#C#
+          #A#D#C#A#
+          #########
     """.trimIndent(), 44169
     )
 }
